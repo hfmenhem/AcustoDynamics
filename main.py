@@ -13,6 +13,7 @@ class Simulador:
         self.rho = rho
         self.v0 = v0
         self.h = h
+        self.e = 0.3
      
     
     def PhiIn(self,r):
@@ -80,6 +81,30 @@ class Simulador:
         f = np.expand_dims(-1*(self.a**3)*np.pi*self.rho*(self.k**2), 2) *(part1+part2)
         return f
     
+    def tempoParaColisao(self, r0, v0, a0):
+        #Essas matrizes não são tais que A = -At
+        Mr0 = r0 - np.transpose(r0, (1,0,2))
+        Mv0 = v0 - np.transpose(v0, (1,0,2))
+        Ma0 = a0 - np.transpose(a0, (1,0,2))
+        #Essa matriz é simétrica
+        MR = self.a + np.transpose(self.a, (1,0))
+        #polinomio de 4 grau: cada elemento da lista vai ser multiplicado por [dt^4, dt^3, dt^2, dt, 1]
+        #Cada elemento dessa lista é uma matriz simétrica
+        indPolynomial = np.array([(np.linalg.norm(Ma0, axis=2)**2)/4, np.einsum('ijk,ijk->ij', Ma0, Mv0),(np.linalg.norm(Mv0, axis=2)**2) +np.einsum('ijk,ijk->ij', Ma0, Mr0),2*np.einsum('ijk,ijk->ij', Mv0, Mr0),(np.linalg.norm(Mr0, axis=2)**2) -(MR**2)])
+        
+        dtCol = np.apply_along_axis(self.MenorRaizReal, 0, indPolynomial)
+        dtCol = dtCol+ np.triu(np.ones(len(dtCol))*np.inf)#Basicamente leva todos os valores da diagonal para cima como np.inf
+        return dtCol
+    
+    def MenorRaizReal(self,ind):
+        v=np.roots(ind)
+        v = v[np.isreal(v)]
+        v = v[v>=0]
+        if len(v) ==0:
+            v=[np.inf]
+        
+        return min(v) #Retorna a menor raiz real maior ou igual a 0
+        
     def Simular(self, r0, v0, dt, tempo):
         frames = int(tempo/dt)
         nPar = np.shape(v0)[0]
@@ -121,6 +146,126 @@ class Simulador:
             vs[:,t+1,:] = v[:,0,:]
         
         return rs, vs, np.array(range(frames))*dt
+    
+    def SimularComColisão(self, r0, v0, dt, tempo):
+        frames = int(tempo/dt)
+        nPar = np.shape(v0)[0]
+        r = r0
+        v = v0
+        tr = 0
+        ultimaCol = [-1,-1]#Armazena colisao que ocorreu no último passo
+
+        rs = np.empty((nPar, frames, 3))
+        vs = np.empty((nPar, frames, 3))
+        ts = np.empty((frames))
+        
+        rs[:,0,:] = r0[:,0,:]
+        vs[:,0,:] = v0[:,0,:]
+        ts[0] = tr
+
+        #Inicio do loop
+        for t in range(0, frames-1):
+            MR = r - np.transpose(r, (1,0,2))
+            Pin = self.PhiIn(r) #[mm^2/s]
+            GPin = self.GradPhiIn(r)
+            HPin = self.HPhiIn(r)
+            
+            Psc = self.PhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)) )
+            GPsc = self.GradPhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)))
+            HPsc = self.HPhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)))
+            
+            Pt  = np.sum(Psc , axis = 1,keepdims=True) + Pin
+            GPt = np.sum(GPsc, axis = 1,keepdims=True) + GPin
+            HPt = np.sum(HPsc, axis = 1,keepdims=True) + HPin
+            
+            F = self.FGorKov(Pt, GPt, HPt) #[uN]
+            
+            A = F/np.expand_dims(self.m, 2)
+            
+            #Testar se alguma esfera está encostada na outra, com velocidade radial nula
+            
+            
+            MRl = np.linalg.norm(MR, axis=2)- (self.a + np.transpose(self.a, (1,0)))
+            MRl = MRl + np.triu(np.ones(np.shape(MR[:,:,0]))*np.inf)
+
+            indEncostado = np.argwhere(MRl==0)
+            DA, indEncostadoV0 = self.calculaEncostado(indEncostado, r, v, A)
+            A = A+DA
+            
+            #Até aqui, A, v, r são as variáveis relevantes. Depois, é considerado A consntante e integrado para achar v' e r'. Porém, isso só acontece se não for ocorrer uma colisão
+            
+            dtcol = self.tempoParaColisao(r, v, A)
+            dtcol[indEncostadoV0] = np.inf #returando os casos em que as partículas estão encostadas e com velocidade radial relativa nula do calculo de colisões
+            dtmincol = np.min(dtcol)
+            indcol = np.argwhere(dtcol==np.min(dtcol)) #Achar os indices de onde colidiu
+            #and( not (indcol== ultimaCol).all())
+            if dtmincol<dt : #Ocorrerá uma colisão antes do próximo passo e não houve a mesma colisão no passo anterior
+                dr = v*dtmincol + A*(dtmincol**2)/2
+                dv = A*dtmincol
+                
+                v = v+dv
+                r = r+dr
+                tr = tr+dtmincol
+                
+                print('colidiu!')
+                print(tr)
+                
+                Dv = self.calculaColisao(indcol, r, v)
+                v = v+Dv
+                ultimaCol = indcol
+            else:            
+                dr = v*dt + (A*(dt**2)/2)
+                dv = A*dt
+                
+                v = v+dv
+                r = r+dr
+                tr = tr+dt
+                ultimaCol = [-1,-1]
+            
+            
+            
+            rs[:,t+1,:] = r[:,0,:]
+            vs[:,t+1,:] = v[:,0,:]
+            ts[t+1] = tr
+            
+        
+        return rs, vs, ts
+    
+    def calculaColisao(self, indices, r, v):
+        Dv = np.zeros(np.shape(v))
+        for ind in indices:
+            Dr = r[ind[0],0, :] - r[ind[1],0, :]
+            drhat = Dr/np.linalg.norm(Dr)
+            
+            v0i = np.dot( v[ind[0], 0, :], drhat)
+            v1i = np.dot( v[ind[1], 0, :], drhat)
+            
+            Dv0 = drhat*(1+self.e)*self.m[ind[1]]*(v1i-v0i)/(self.m[ind[1]]+self.m[ind[0]])
+            Dv1 = drhat*(1+self.e)*self.m[ind[0]]*(v0i-v1i)/(self.m[ind[1]]+self.m[ind[0]])
+            
+            Dv[ind[0], 0, :] = Dv[ind[0], 0, :] + Dv0
+            Dv[ind[1], 0, :] = Dv[ind[1], 0, :] + Dv1
+            
+        return Dv
+    
+    def calculaEncostado(self, indices, r, v, a):
+        Da = np.zeros(np.shape(a))
+        indV0 =[]
+        for ind in indices:
+            Dr = r[ind[0],0, :] - r[ind[1],0, :]
+            drhat = Dr/np.linalg.norm(Dr)
+            
+            vr = np.dot( v[ind[0], 0, :]-v[ind[1], 0, :], drhat)
+            if vr ==0: #Os objetos estão realmente encostados. Dessa forma, há uma força normal que faz com que a aceleração de um objeto seja igual ao do outro
+                a0i = np.dot( a[ind[0], 0, :], drhat)  
+                a1i = np.dot( a[ind[1], 0, :], drhat)  
+                N = drhat*self.m[ind[0]]*self.m[ind[1]]*(a1i-a0i)/(self.m[ind[0]]+self.m[ind[1]])
+                
+                Da[ind[0], 0, :] = Da[ind[0], 0, :] + N/self.m[ind[0]]
+                Da[ind[1], 0, :] = Da[ind[1], 0, :] - N/self.m[ind[1]]
+                indV0.append(ind)
+            
+        return Da, indV0
 
 
 
