@@ -23,15 +23,16 @@ sim = Simulador(f1, f2, f, c, k, a, m, rho, v0, h)
 
 
 
-r0 = np.array([[[-0.2*np.pi/k,0,0]], [[0.2*np.pi/k,0,0]]])
-v0 = np.array([[[0.0,0,0]], [[0,0,0]]])
+r0 = np.array([[[-0.13*np.pi/k,0,0]], [[0.13*np.pi/k,0,0]]])
+v0 = np.array([[[0.0,0,0]], [[0.0,0,0]]])
 
 # r0 = np.array([[[0,0,0]], [[4/k,0,0]], [[-8/k,0,0]]])
 # v0 = np.array([[[0.0,0,0]], [[-0.04,0,0]], [[0,0,0]]])
 
 
-dt = 0.01
-tempo = 100
+dt = 0.1
+tempo = 50
+
 rs, vs, t = sim.SimularComColisão(r0, v0, dt, tempo)
 
 plt.figure(dpi=300)
