@@ -13,7 +13,7 @@ class Simulador:
         self.rho = rho
         self.v0 = v0
         self.h = h
-        self.e = 1
+        self.e = 0.3
         self.limDV = v0*1e-9 #Limite de varição de velocidade durante uma colisão. Caso o valor seja menor que isso em módulo, a colisão é recalculada considerando e=0
     
     def PhiIn(self,r):
@@ -163,6 +163,8 @@ class Simulador:
         rs[:,0,:] = r0[:,0,:]
         vs[:,0,:] = v0[:,0,:]
         ts[0] = tr
+        
+        TColsisoes =[] #Para guardar o tempo em que as partículas se encostam
 
         #Inicio do loop
         for t in range(0, frames-1):
@@ -223,6 +225,7 @@ class Simulador:
                 
                 print('colidiu ou encostou!')
                 print(tr)
+                TColsisoes.append(tr)
             
             else:            
                 dr = v*dt + (A*(dt**2)/2)
@@ -240,7 +243,7 @@ class Simulador:
             ts[t+1] = tr
             
         
-        return rs, vs, ts
+        return rs, vs, ts, TColsisoes
     
     def calculaColisao(self, indices, r, v):
         Dv = np.zeros(np.shape(v))

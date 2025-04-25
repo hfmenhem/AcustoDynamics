@@ -23,22 +23,36 @@ sim = Simulador(f1, f2, f, c, k, a, m, rho, v0, h)
 
 
 
-r0 = np.array([[[-0.13*np.pi/k,0,0]], [[0.13*np.pi/k,0,0]]])
+#r0 = np.array([[[-0.13*np.pi/k,0,0]], [[0.13*np.pi/k,0,0]]])
+#v0 = np.array([[[0.0,0,0.000000001]], [[0.0,0,0.000000001]]])
+
+
+r0 = np.array([[[0.00001,0,-0.13*np.pi/k]], [[0,0,+0.13*np.pi/k]]])
 v0 = np.array([[[0.0,0,0]], [[0.0,0,0]]])
+
 
 # r0 = np.array([[[0,0,0]], [[4/k,0,0]], [[-8/k,0,0]]])
 # v0 = np.array([[[0.0,0,0]], [[-0.04,0,0]], [[0,0,0]]])
 
 
 dt = 0.1
-tempo = 50
+tempo = 200
 
-rs, vs, t = sim.SimularComColisão(r0, v0, dt, tempo)
+rs, vs, t, TColsisoes = sim.SimularComColisão(r0, v0, dt, tempo)
+
+
+indCol = np.any(np.equal(np.expand_dims(t, 1), np.expand_dims(TColsisoes,0)), axis=1)
+rColisao  = rs[:, indCol,:]
 
 plt.figure(dpi=300)
 #plt.axes().set_aspect('equal')
 for i in range(Npar):
     plt.plot(rs[i, :, 0], rs[i, :, 2], linestyle='', marker='.',markersize=2)
+    plt.plot(rColisao[i, :, 0], rColisao[i, :, 2], linestyle='', marker='.',markersize=2)
+
+
+
+
 
 plt.xlabel("x [mm]")
 plt.ylabel("z [mm]")
@@ -50,9 +64,20 @@ plt.figure(dpi=300)
 #plt.axes().set_aspect('equal')
 for i in range(Npar):
     plt.plot(t, rs[i, :, 0], linestyle='', marker='.',markersize=2)
+    plt.plot(TColsisoes, rColisao[i, :, 0], linestyle='', marker='.',markersize=2)
 
 plt.ylabel("x [mm]")
 plt.xlabel("t [s]")
 
 plt.show()
 
+plt.figure(dpi=300)
+#plt.axes().set_aspect('equal')
+for i in range(Npar):
+    plt.plot(t, rs[i, :, 2], linestyle='', marker='.',markersize=2)
+    plt.plot(TColsisoes, rColisao[i, :, 2], linestyle='', marker='.',markersize=2)
+
+plt.ylabel("z [mm]")
+plt.xlabel("t [s]")
+
+plt.show()
