@@ -106,8 +106,8 @@ class Simulador:
         
         dtCol = np.apply_along_axis(self.MenorRaizReal, 0, indPolynomial)
         dtCol = dtCol+ np.triu(np.ones(len(dtCol))*np.inf)#Basicamente leva todos os valores da diagonal para cima como np.inf
-        argAfastando = np.argwhere(np.logical_and(dtCol==0 ,np.einsum('ijk,ijk->ij', Mv0, Mr0)>0))#Onde as partículas estão encostadas mas se afastando
-        dtCol[argAfastando]=np.inf
+        #argAfastando = np.argwhere(np.logical_and(dtCol==0 ,np.einsum('ijk,ijk->ij', Mv0, Mr0)>0))#Onde as partículas estão encostadas mas se afastando
+        #dtCol[argAfastando]=np.inf
         return dtCol
     
     def MenorRaizReal(self,ind):
@@ -208,8 +208,8 @@ class Simulador:
                 MVn = np.einsum('ijk,ijk->ij', MV, MR/np.linalg.norm(MR, axis=2, keepdims=True)) #Matriz triangular das Velocidades normais
                 
                 #Primiero calcular colisões
-                indColisao = np.argwhere(np.logical_and(MRl==0 ,MVn<0))
-                indEncostado = np.argwhere(np.logical_and(MRl==0 ,MVn==0))
+                indColisao = np.argwhere(np.logical_and(MRl<=0 ,MVn<0)) #A rigor, era pra ser MRL==0. Porém, para contornar problemas de erros numéricos, fazemos MRl<=0, porque existem casos que esse valor vai ser muito pequeno (em vez de 0, devido a erro numérico), porém negativo. Perceba que se MRl for muito pequeno, porém positivo, será feita mais uma passagem do loop até chegar no valor 0 ou muito pequeno negativo. Perceba também que nunca ocorrerá um valor de MRl de fato negativo (ou seja, negativo sem ser por erro numérico), visto que para isso uma esfera deveria atravessar outra, porém o programa impede isso de ocorrer quando MRl ==0 (caso preciso) ou MRl aprox 0 porém negativo (caso com um pequeno erro numérico)
+                indEncostado = np.argwhere(np.logical_and(MRl<=0 ,MVn==0))
                 if np.size(indColisao) !=0:
                     Dv = self.calculaColisao(indColisao, r, v)
                     v = v+Dv
