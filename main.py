@@ -2,12 +2,12 @@ import numpy as np
 
 class Simulador:
     
-    def __init__(self, f1, f2, f, c, k, a, m, rho, v0, h):   
+    def __init__(self, f1, f2, f, c, a, m, rho, v0, h):   
         self.f1 = f1
         self.f2 = f2
         self.f = f
         self.c = c
-        self.k = k
+        self.k = 2*np.pi*f/c
         self.a = a
         self.m = m
         self.rho = rho
@@ -15,6 +15,18 @@ class Simulador:
         self.h = h
         self.e = 0.3
         self.limDV = v0*1e-9 #Limite de varição de velocidade durante uma colisão. Caso o valor seja menor que isso em módulo, a colisão é recalculada considerando e=0
+    
+    def agua(Npar):
+        #unidades mm, s, g
+        dicAgua = {'f1': np.array(Npar*[[0.623]]), 'f2':np.array(Npar*[[0.034]]), 'f': 10*(10**6), 'c':1480*(10**3), 'rho': 998*(10**(-6)), 'v0': (50*(10**3))/(998*(10**(-6))*1480*(10**3)), 'k':2*np.pi*(10*(10**6))/(1480*(10**3))}
+        #v0 = (50*(10**3))/(c*rho) #Pressão = 50*(10**3) Pa = 50*(10**3) g/mm*s^2
+        return dicAgua
+    
+    def ar(Npar):
+        #unidades mm, s, g
+        dicAgua = {'f1': np.array(Npar*[[1.0]]), 'f2':np.array(Npar*[[1.0]]), 'f': 40*(10**3), 'c':340*(10**3), 'rho': 1.29*(10**(-6)), 'v0': (800)/( 1.29*(10**(-6))*340*(10**3)), 'k':2*np.pi*(40*(10**3))/(340*(10**3))}
+        #v0 = (800)/(c*rho) #Pressão = 800 Pa = 800 g/mm*s^2
+        return dicAgua
     
     def PhiIn(self,r):
         return (self.v0/self.k)*np.sin(self.k*(r[:,:, 2]-self.h))

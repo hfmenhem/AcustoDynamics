@@ -32,7 +32,7 @@ v0 = (50*(10**3))*k/(2*np.pi*f*rho) #Pressão = 50*(10**3) Pa = 50*(10**3) g/mm*
 
 h=(np.pi/2)/k
 
-sim = Simulador(f1, f2, f, c, k, a, m, rho, v0, h)
+sim = Simulador(f1, f2, f, c, a, m, rho, v0, h)
 
 rs = np.array([[[0,0,0]]]) #Posições das partículas emissoreas
 

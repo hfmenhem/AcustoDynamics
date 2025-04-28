@@ -21,7 +21,7 @@ rho = 1000*(10**(-6)) #g/mm^3
 v0 = (np.sqrt(2)/10) * (10**3) # [mm/s] velocidade equivalente para uma energia de 10J
 h=(np.pi/2)/k
 
-sim = Simulador(f1, f2, f, c, k, a, m, rho, v0, h)
+sim = Simulador(f1, f2, f, c, a, m, rho, v0, h)
 
 
 

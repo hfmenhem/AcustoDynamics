@@ -1,3 +1,7 @@
+import sys, os
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(parent_dir) #Para poder importar o main, que está em uma pasta anterior
+
 from main import Simulador
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,21 +17,12 @@ def find_nearest(array, value):
 
 Npar = 2
 
-
-# dicMeio = Simulador.agua(Npar)
-# a = np.array(Npar*[[0.1*np.pi/dicMeio['k']]]) # [mm]
-# m = np.array([[0.01], [0.01]]) # [g]
-#h=np.pi/dicMeio['k']
-
 dicMeio = Simulador.ar(Npar)
 teste=dicMeio['k']
 a = np.array(Npar*[[0.1*np.pi/dicMeio['k']]]) # [mm]
 m = (a**3*(4*np.pi/3))*(dicMeio['rho']*1000) # [g], densidade do ar vezes seu volume
 
 h=0
-
-teste=dicMeio['f1']
-teste2=np.array([dicMeio['f1'][0]])
 
 #Perfil da força de Gor'kov
 sim = Simulador(np.array([dicMeio['f1'][0]]), np.array([dicMeio['f2'][0]]), dicMeio['f'], dicMeio['c'], np.array([a[0]]), np.array([m[0]]), dicMeio['rho'], dicMeio['v0']/10, h)
@@ -48,8 +43,8 @@ plt.legend()
 
 #-----------
 
-r0 = np.array([[[-0.25*np.pi/dicMeio['k'],0,0]], [[+0.25*np.pi/dicMeio['k'],0,0]]])
-v0 = np.array([[[0.02,0,0.002]], [[-0.02,0,0]]])
+r0 = np.array([[[0.001,0,-0.13*np.pi/dicMeio['k']]], [[0,0,+0.13*np.pi/dicMeio['k']]]])
+v0 = np.array([[[0.0,0,0]], [[0.0,0,0]]])
 
 
 sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], dicMeio['v0']/10, h)
@@ -75,7 +70,7 @@ rplotR = rs[:, indplotR, :]
 
 #Plot do plano xz
 plt.figure(dpi=300)
-plt.axes().set_aspect('equal')
+#plt.axes().set_aspect('equal')
 #Definição do circulo unitário
 ang=np.linspace(0, 2*np.pi, 50)
 circ = np.transpose([np.sin(ang), np.zeros(len(ang)), np.cos(ang)])
@@ -112,17 +107,6 @@ for i in range(Npar):
     plt.plot(TColsisoes, rColisao[i, :, 2], linestyle='', marker='.',markersize=2)
 
 plt.ylabel("z [mm]")
-plt.xlabel("t [s]")
-
-plt.show()
-
-#y x t
-plt.figure(dpi=300)
-for i in range(Npar):
-    plt.plot(t, rs[i, :, 1], linestyle='', marker='.',markersize=2)
-    plt.plot(TColsisoes, rColisao[i, :, 1], linestyle='', marker='.',markersize=2)
-
-plt.ylabel("y [mm]")
 plt.xlabel("t [s]")
 
 plt.show()

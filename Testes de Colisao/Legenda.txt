@@ -1,0 +1,4 @@
+Teste_Colisão-1: Duas esferas quase alinhadas no eixo Z, próximas do ponto de equilíbrio
+Teste_Colisão-2: Duas esferas totalmente alinhadas no eixo Z, próximas do ponto de equilíbrio
+Teste_Colisão-3: Duas esferas quase alinhadas no eixo x, próximas do ponto de equilíbrio, com velocidade inicial de forma que vão colidir
+
