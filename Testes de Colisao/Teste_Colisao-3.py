@@ -110,3 +110,5 @@ plt.ylabel("z [mm]")
 plt.xlabel("t [s]")
 
 plt.show()
+
+sim.saveSimulacao(rs, vs, t, 'data3')

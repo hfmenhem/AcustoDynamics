@@ -49,7 +49,7 @@ v0 = np.array([[[0.0,0,0]], [[0.0,0,0]]])
 
 sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], dicMeio['v0']/10, h)
 dt = 0.001
-tempo = 10
+tempo = 5
 
 rs, vs, t, TColsisoes = sim.SimularComColisão(r0, v0, dt, tempo)
 CorTempo = cmap(np.linspace(0, 1, len(t))) #Mapa de cor para indicar o tempo da simulação
@@ -110,3 +110,5 @@ plt.ylabel("z [mm]")
 plt.xlabel("t [s]")
 
 plt.show()
+
+sim.saveSimulacao(rs, vs, t, 'data1')

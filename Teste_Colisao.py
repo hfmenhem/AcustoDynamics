@@ -48,8 +48,11 @@ plt.legend()
 
 #-----------
 
-r0 = np.array([[[-0.25*np.pi/dicMeio['k'],0,0]], [[+0.25*np.pi/dicMeio['k'],0,0]]])
-v0 = np.array([[[0.02,0,0.002]], [[-0.02,0,0]]])
+# r0 = np.array([[[-0.25*np.pi/dicMeio['k'],0,0]], [[+0.25*np.pi/dicMeio['k'],0,0]]])
+# v0 = np.array([[[0.02,0,0.002]], [[-0.02,0,0]]])
+
+r0 = np.array([[[-0.1*np.pi/dicMeio['k'],0,0]], [[+0.1*np.pi/dicMeio['k'],0,0]]])
+v0 = np.array([[[0.0,0,0]], [[-0.0,0,0]]])
 
 
 sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], dicMeio['v0']/10, h)

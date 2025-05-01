@@ -1,4 +1,7 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import pickle 
 
 class Simulador:
     
@@ -104,10 +107,8 @@ class Simulador:
         #Cada elemento dessa lista é uma matriz simétrica
         indPolynomial = np.array([(np.linalg.norm(Ma0, axis=2)**2)/4, np.einsum('ijk,ijk->ij', Ma0, Mv0),(np.linalg.norm(Mv0, axis=2)**2) +np.einsum('ijk,ijk->ij', Ma0, Mr0),2*np.einsum('ijk,ijk->ij', Mv0, Mr0),(np.linalg.norm(Mr0, axis=2)**2) -(MR**2)])
         
-        dtCol = np.apply_along_axis(self.MenorRaizReal, 0, indPolynomial)
+        dtCol = np.apply_along_axis(self.MenorRaizReal, 0, indPolynomial)#Retorna os menores tempos de colisão diferentes de 0
         dtCol = dtCol+ np.triu(np.ones(len(dtCol))*np.inf)#Basicamente leva todos os valores da diagonal para cima como np.inf
-        #argAfastando = np.argwhere(np.logical_and(dtCol==0 ,np.einsum('ijk,ijk->ij', Mv0, Mr0)>0))#Onde as partículas estão encostadas mas se afastando
-        #dtCol[argAfastando]=np.inf
         return dtCol
     
     def MenorRaizReal(self,ind):
@@ -289,13 +290,67 @@ class Simulador:
             a1i = np.dot( a[ind[1], 0, :], drhat)  
             N = drhat*self.m[ind[0]]*self.m[ind[1]]*(a1i-a0i)/(self.m[ind[0]]+self.m[ind[1]])
             
+            if np.dot(drhat, N)< 0: #Significa que a força está para dentro
+                N = np.array([0,0,0])
+              
             Da[ind[0], 0, :] = Da[ind[0], 0, :] + N/self.m[ind[0]]
             Da[ind[1], 0, :] = Da[ind[1], 0, :] - N/self.m[ind[1]]
             indV0.append(ind)
             
         return Da, indV0
+    
+    def saveSimulacao(self, rs, vs, t, nome):
+        salvar = {'rs': rs, 'vs': vs, 't': t, 'f1': self.f1, 'f2': self.f2, 'f': self.f, 'c': self.c, 'a': self.a, 'm': self.m, 'rho': self.rho, 'v0': self.v0}
+        
 
+        with open(nome+'.pkl', 'wb') as file: 
+            pickle.dump(salvar, file)   
+            
+    def video(nome, FPS = 20):
+        with open(nome+'.pkl', 'rb') as file:   
+          salvo = pickle.load(file) 
+          
+        rs = salvo['rs']
+        t = salvo['t']
+        a = salvo['a']
+        
+        fig = plt.figure(dpi=300)
+        ax = fig.add_subplot(projection='3d', azim=-80, elev=10)
+        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
+        #tempos dos frames
+        tfps = np.linspace(0, np.max(t), round(np.max(t)*FPS + 1))
+        indTfps = np.argmin((np.abs(t - np.expand_dims(tfps, 1))),axis= 1)
+     
+        
+        # esfera unitária
+        u = np.linspace(0, 2 * np.pi, 10)
+        v = np.linspace(0, np.pi, 10)
+        esfunit = np.array([np.outer(np.cos(u), np.sin(v)),np.outer(np.sin(u), np.sin(v)), np.outer(np.ones(np.size(u)), np.cos(v))])        
+        
+        rlim = np.array([np.min(rs, axis=(0,1)) - 2*np.min(a), np.max(rs, axis=(0,1)) + 2*np.max(a)])
+        ax.set(xlim=rlim[:, 0], ylim=rlim[:, 1], zlim=rlim[:, 2] )
+        ax.grid(False)
+        ax.set_aspect('equal')    
+        ax.set_axis_off()
+      
+        ax.quiver(*np.transpose(3*[rlim[0, :]]), [0, 0, 1], [0, 1, 0], [1, 0, 0], length= (np.mean(rlim[1,:]-rlim[0,:])/5),arrow_length_ratio=0.2, linewidths=1, colors='k' )
+        ax.text(*rlim[0, :], 'x', 'x', verticalalignment='top', horizontalalignment ='left')
+        
+        artEsfera=[]
+        for i, ai in enumerate(a):
+            artEsfera.append(ax.plot_surface(*(ai*esfunit)+np.expand_dims(rs[i, 0, :], (1,2)), color='xkcd:teal'))
+        
+        maxframe=max(indTfps)
+        def update(frame):
+            for i, ai in enumerate(a):
+                artEsfera[i].remove()
+                artEsfera[i]=ax.plot_surface(*(ai*esfunit)+np.expand_dims(rs[i, frame, :], (1,2)), color='xkcd:teal')
+            print(f'{ 100*frame/maxframe:.2f}% feito')
+            return (artEsfera[0])
+        ani = animation.FuncAnimation(fig=fig, func=update, frames=indTfps, interval=1000/FPS)
+        ani.save(nome+'.gif')
 
+    
 
 
 
