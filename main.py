@@ -201,9 +201,6 @@ class Simulador:
             Fac = self.FGorKov(Pt, GPt, HPt) #[uN]
             
             Far = -6*np.pi*self.dinvis*np.expand_dims(self.a, 2)*v
-            
-            if t>=496:
-                print('oi')
                 
             A = (Fac+Far)/np.expand_dims(self.m, 2)
             
@@ -218,8 +215,11 @@ class Simulador:
                 MVn = np.einsum('ijk,ijk->ij', MV, MR/np.linalg.norm(MR, axis=2, keepdims=True)) #Matriz triangular das Velocidades normais
                 
                 #Primiero calcular colisões
-                indColisao = np.argwhere(np.logical_and(np.logical_and(MRl<=0 ,MVn<0), np.logical_not(np.isclose(MVn, 0)))) #A rigor, era pra ser MRL==0. Porém, para contornar problemas de erros numéricos, fazemos MRl<=0, porque existem casos que esse valor vai ser muito pequeno (em vez de 0, devido a erro numérico), porém negativo. Perceba que se MRl for muito pequeno, porém positivo, será feita mais uma passagem do loop até chegar no valor 0 ou muito pequeno negativo. Perceba também que nunca ocorrerá um valor de MRl de fato negativo (ou seja, negativo sem ser por erro numérico), visto que para isso uma esfera deveria atravessar outra, porém o programa impede isso de ocorrer quando MRl ==0 (caso preciso) ou MRl aprox 0 porém negativo (caso com um pequeno erro numérico)
-                indEncostado = np.argwhere(np.logical_and(MRl<=0 , np.isclose(MVn, 0)))
+       
+                indColisao = np.argwhere(np.logical_and(np.logical_and(np.isclose(MRl,0) ,MVn<0), np.logical_not(np.isclose(MVn, 0)))) #A rigor, era pra ser MRL==0. Porém, para contornar problemas de erros numéricos, fazemos MRl<=0, porque existem casos que esse valor vai ser muito pequeno (em vez de 0, devido a erro numérico), porém negativo. Perceba que se MRl for muito pequeno, porém positivo, será feita mais uma passagem do loop até chegar no valor 0 ou muito pequeno negativo. Perceba também que nunca ocorrerá um valor de MRl de fato negativo (ou seja, negativo sem ser por erro numérico), visto que para isso uma esfera deveria atravessar outra, porém o programa impede isso de ocorrer quando MRl ==0 (caso preciso) ou MRl aprox 0 porém negativo (caso com um pequeno erro numérico)
+                indEncostado = np.argwhere(np.logical_and(np.isclose(MRl,0) , np.isclose(MVn, 0))) 
+
+                
                 if np.size(indColisao) !=0:
                     Dv = self.calculaColisao(indColisao, r, v)
                     v = v+Dv
@@ -236,8 +236,19 @@ class Simulador:
             
             dtcol = self.tempoParaColisao(r, v, A)
             dtValido = np.extract(np.logical_and(dtcol < dt, np.logical_not(np.isclose(dtcol, 0))),dtcol)
-            if np.size(dtValido) !=0: #Ocorrerá uma colisão ou encostamento antes do próximo passo, então vamos simular até esse momento
-                dtmincol = np.min(dtValido)
+            
+            MA = A - np.transpose(A, (1,0,2))
+            MAn = np.einsum('ijk,ijk->ij', MA, MR/np.linalg.norm(MR, axis=2, keepdims=True))
+            Dr = (MVn**2)/(-2*MAn)
+            
+            argerroR = np.argwhere( np.logical_and(np.logical_and(MAn<0, MVn>0), Dr<-1*MRl))#Isso significa que há duas esferas dentro uma da outra, se afastando, porém a velocidade de afastamento não é suficiente para se afastarem completamente
+            if len(argerroR)!=0:
+                dterroR = np.squeeze((-MVn/MAn)[argerroR[:,0],argerroR[:,1]])
+                dterroR = np.extract(dterroR < dt,dterroR)
+            else:
+                dterroR=[]
+            if np.size(dtValido) !=0 or np.size(dterroR)!=0: #Ocorrerá uma colisão ou encostamento antes do próximo passo, então vamos simular até esse momento
+                dtmincol = np.min(np.concatenate((dtValido, dterroR)))
                 dr = v*dtmincol + A*(dtmincol**2)/2
                 dv = A*dtmincol
                 
@@ -245,9 +256,10 @@ class Simulador:
                 r = r+dr
                 tr = tr+dtmincol
                 
-                print('colidiu ou encostou!')
-                print(tr)
-                TColsisoes.append(tr)
+                if np.size(dtValido) !=0:
+                    print('colidiu ou encostou!')
+                    print(tr)
+                    TColsisoes.append(tr)
             
             else:            
                 dr = v*dt + (A*(dt**2)/2)
@@ -292,7 +304,6 @@ class Simulador:
     
     def calculaEncostado(self, indices, r, v, a):
         Da = np.zeros(np.shape(a))
-        indV0 =[]
         
         Dr = r[indices[:, 1],0, :] - r[indices[:, 0],0, :]
         
@@ -345,23 +356,6 @@ class Simulador:
         Mind[indices[:,1],range(len(indices[:,1]))] += +1
         
         DA = np.einsum('ij,ki->kj', Nvec, Mind)/self.m
-        teste= np.expand_dims(DA, 1)
-        
-        
-        # for ind in indices:
-        #     Dr = r[ind[0],0, :] - r[ind[1],0, :]
-        #     drhat = Dr/np.linalg.norm(Dr)
-            
-        #     a0i = np.dot( a[ind[0], 0, :], drhat)  
-        #     a1i = np.dot( a[ind[1], 0, :], drhat)  
-        #     N = drhat*self.m[ind[0]]*self.m[ind[1]]*(a1i-a0i)/(self.m[ind[0]]+self.m[ind[1]])
-            
-        #     if np.dot(drhat, N)< 0: #Significa que a força está para dentro
-        #         N = np.array([0,0,0])
-              
-        #     Da[ind[0], 0, :] = Da[ind[0], 0, :] + N/self.m[ind[0]]
-        #     Da[ind[1], 0, :] = Da[ind[1], 0, :] - N/self.m[ind[1]]
-        #     indV0.append(ind)
             
         return np.expand_dims(DA, 1)
     
