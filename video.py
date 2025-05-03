@@ -1,3 +1,3 @@
 from main import Simulador
-Simulador.video('data3', FPS=20)
+Simulador.video('Tubo de Kundt\Tubo1-800', FPS=10, Tmult=30)
 

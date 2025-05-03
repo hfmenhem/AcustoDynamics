@@ -1,11 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib as mpl
 import pickle 
 
 class Simulador:
     
-    def __init__(self, f1, f2, f, c, a, m, rho, v0, h):   
+    def __init__(self, f1, f2, f, c, a, m, rho, v0, h, dinvis):   
         self.f1 = f1
         self.f2 = f2
         self.f = f
@@ -16,20 +17,23 @@ class Simulador:
         self.rho = rho
         self.v0 = v0
         self.h = h
-        self.e = 0.3
+        self.e = 0.0
         self.limDV = v0*1e-9 #Limite de varição de velocidade durante uma colisão. Caso o valor seja menor que isso em módulo, a colisão é recalculada considerando e=0
+        self.dinvis = dinvis
     
     def agua(Npar):
         #unidades mm, s, g
-        dicAgua = {'f1': np.array(Npar*[[0.623]]), 'f2':np.array(Npar*[[0.034]]), 'f': 10*(10**6), 'c':1480*(10**3), 'rho': 998*(10**(-6)), 'v0': (50*(10**3))/(998*(10**(-6))*1480*(10**3)), 'k':2*np.pi*(10*(10**6))/(1480*(10**3))}
+        dicAgua = {'f1': np.array(Npar*[[0.623]]), 'f2':np.array(Npar*[[0.034]]), 'f': 10*(10**6), 'c':1480*(10**3), 'rho': 998*(10**(-6)), 'v0': (50*(10**3))/(998*(10**(-6))*1480*(10**3)), 'k':2*np.pi*(10*(10**6))/(1480*(10**3)), 'dimvis': 1.002}
         #v0 = (50*(10**3))/(c*rho) #Pressão = 50*(10**3) Pa = 50*(10**3) g/mm*s^2
+        #viscosidade do ar [kg/m*s = g/mm*s] a 20°C tirada de https://www.engineersedge.com/physics/water__density_viscosity_specific_weight_13146.htm
         return dicAgua
     
     def ar(Npar):
         #unidades mm, s, g
-        dicAgua = {'f1': np.array(Npar*[[1.0]]), 'f2':np.array(Npar*[[1.0]]), 'f': 40*(10**3), 'c':340*(10**3), 'rho': 1.29*(10**(-6)), 'v0': (800)/( 1.29*(10**(-6))*340*(10**3)), 'k':2*np.pi*(40*(10**3))/(340*(10**3))}
+        dicAr = {'f1': np.array(Npar*[[1.0]]), 'f2':np.array(Npar*[[1.0]]), 'f': 40*(10**3), 'c':340*(10**3), 'rho': 1.29*(10**(-6)), 'v0': (800)/( 1.29*(10**(-6))*340*(10**3)), 'k':2*np.pi*(40*(10**3))/(340*(10**3)), 'dinvis': 1.849*(10**-5)}
         #v0 = (800)/(c*rho) #Pressão = 800 Pa = 800 g/mm*s^2
-        return dicAgua
+        #viscosidade do ar [kg/m*s = g/mm*s] a 25°C tirada de https://www.engineersedge.com/physics/viscosity_of_air_dynamic_and_kinematic_14483.htm
+        return dicAr
     
     def PhiIn(self,r):
         return (self.v0/self.k)*np.sin(self.k*(r[:,:, 2]-self.h))
@@ -162,7 +166,7 @@ class Simulador:
         
         return rs, vs, np.array(range(frames))*dt
     
-    def SimularComColisão(self, r0, v0, dt, tempo):
+    def SimularComColisão(self, r0, v0, dt, tempo, arrasto=False):
         frames = int(tempo/dt)
         nPar = np.shape(v0)[0]
         r = r0
@@ -194,11 +198,16 @@ class Simulador:
             GPt = np.sum(GPsc, axis = 1,keepdims=True) + GPin
             HPt = np.sum(HPsc, axis = 1,keepdims=True) + HPin
             
-            F = self.FGorKov(Pt, GPt, HPt) #[uN]
+            Fac = self.FGorKov(Pt, GPt, HPt) #[uN]
             
-            A = F/np.expand_dims(self.m, 2)
+            Far = -6*np.pi*self.dinvis*np.expand_dims(self.a, 2)*v
             
-            #Testar se alguma esfera está encostada na outra, com velocidade radial nula
+            if t>=496:
+                print('oi')
+                
+            A = (Fac+Far)/np.expand_dims(self.m, 2)
+            
+            #Testar se alguma esfera está encostada na outra, com velocidade radial nul
             
             CalculaColEnc=True
             while(CalculaColEnc):
@@ -209,15 +218,15 @@ class Simulador:
                 MVn = np.einsum('ijk,ijk->ij', MV, MR/np.linalg.norm(MR, axis=2, keepdims=True)) #Matriz triangular das Velocidades normais
                 
                 #Primiero calcular colisões
-                indColisao = np.argwhere(np.logical_and(MRl<=0 ,MVn<0)) #A rigor, era pra ser MRL==0. Porém, para contornar problemas de erros numéricos, fazemos MRl<=0, porque existem casos que esse valor vai ser muito pequeno (em vez de 0, devido a erro numérico), porém negativo. Perceba que se MRl for muito pequeno, porém positivo, será feita mais uma passagem do loop até chegar no valor 0 ou muito pequeno negativo. Perceba também que nunca ocorrerá um valor de MRl de fato negativo (ou seja, negativo sem ser por erro numérico), visto que para isso uma esfera deveria atravessar outra, porém o programa impede isso de ocorrer quando MRl ==0 (caso preciso) ou MRl aprox 0 porém negativo (caso com um pequeno erro numérico)
-                indEncostado = np.argwhere(np.logical_and(MRl<=0 ,MVn==0))
+                indColisao = np.argwhere(np.logical_and(np.logical_and(MRl<=0 ,MVn<0), np.logical_not(np.isclose(MVn, 0)))) #A rigor, era pra ser MRL==0. Porém, para contornar problemas de erros numéricos, fazemos MRl<=0, porque existem casos que esse valor vai ser muito pequeno (em vez de 0, devido a erro numérico), porém negativo. Perceba que se MRl for muito pequeno, porém positivo, será feita mais uma passagem do loop até chegar no valor 0 ou muito pequeno negativo. Perceba também que nunca ocorrerá um valor de MRl de fato negativo (ou seja, negativo sem ser por erro numérico), visto que para isso uma esfera deveria atravessar outra, porém o programa impede isso de ocorrer quando MRl ==0 (caso preciso) ou MRl aprox 0 porém negativo (caso com um pequeno erro numérico)
+                indEncostado = np.argwhere(np.logical_and(MRl<=0 , np.isclose(MVn, 0)))
                 if np.size(indColisao) !=0:
                     Dv = self.calculaColisao(indColisao, r, v)
                     v = v+Dv
                 elif np.size(indEncostado) !=0: #Quando Há colisão, MV muda, então temos que re-calcular isso, por isso pulamos isso e no próximo loop que fazemos 
                     DA, indEncostadoV0 = self.calculaEncostado(indEncostado, r, v, A)
                     A = A+DA
-                    if np.all(DA==0):#Se não houve mais nenhuma modificação na aceleração, pode sair do loop
+                    if np.all(np.isclose(DA, 0)):#Se não houve mais nenhuma modificação na aceleração, pode sair do loop
                         CalculaColEnc=False
                 else: 
                     CalculaColEnc = False #Se não houve nenhuma colisão, então ele sai desse loop
@@ -226,7 +235,7 @@ class Simulador:
             #Até aqui, A, v, r são as variáveis relevantes. Depois, é considerado A consntante e integrado para achar v' e r'. Porém, isso só acontece se não for ocorrer uma colisão
             
             dtcol = self.tempoParaColisao(r, v, A)
-            dtValido = np.extract(np.logical_and(dtcol < dt, dtcol!=0),dtcol)
+            dtValido = np.extract(np.logical_and(dtcol < dt, np.logical_not(np.isclose(dtcol, 0))),dtcol)
             if np.size(dtValido) !=0: #Ocorrerá uma colisão ou encostamento antes do próximo passo, então vamos simular até esse momento
                 dtmincol = np.min(dtValido)
                 dr = v*dtmincol + A*(dtmincol**2)/2
@@ -262,10 +271,12 @@ class Simulador:
         Dv = np.zeros(np.shape(v))
         for ind in indices:
             Dr = r[ind[0],0, :] - r[ind[1],0, :]
-            drhat = Dr/np.linalg.norm(Dr)
             
-            v0i = np.dot( v[ind[0], 0, :], drhat)
-            v1i = np.dot( v[ind[1], 0, :], drhat)
+            
+            v0i = np.dot( v[ind[0], 0, :], Dr)/np.linalg.norm(Dr)
+            v1i = np.dot( v[ind[1], 0, :], Dr)/np.linalg.norm(Dr)
+            
+            drhat = Dr/np.linalg.norm(Dr)
             
             Dv0 = drhat*(1+self.e)*self.m[ind[1]]*(v1i-v0i)/(self.m[ind[1]]+self.m[ind[0]])
             Dv1 = drhat*(1+self.e)*self.m[ind[0]]*(v0i-v1i)/(self.m[ind[1]]+self.m[ind[0]])
@@ -306,7 +317,7 @@ class Simulador:
         with open(nome+'.pkl', 'wb') as file: 
             pickle.dump(salvar, file)   
             
-    def video(nome, FPS = 20):
+    def video(nome, FPS = 20, Tmult = 1):
         with open(nome+'.pkl', 'rb') as file:   
           salvo = pickle.load(file) 
           
@@ -318,7 +329,7 @@ class Simulador:
         ax = fig.add_subplot(projection='3d', azim=-80, elev=10)
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
         #tempos dos frames
-        tfps = np.linspace(0, np.max(t), round(np.max(t)*FPS + 1))
+        tfps = np.linspace(0, np.max(t), round(np.max(t)*FPS*Tmult + 1))
         indTfps = np.argmin((np.abs(t - np.expand_dims(tfps, 1))),axis= 1)
      
         
@@ -336,6 +347,8 @@ class Simulador:
         ax.quiver(*np.transpose(3*[rlim[0, :]]), [0, 0, 1], [0, 1, 0], [1, 0, 0], length= (np.mean(rlim[1,:]-rlim[0,:])/5),arrow_length_ratio=0.2, linewidths=1, colors='k' )
         ax.text(*rlim[0, :], 'x', 'x', verticalalignment='top', horizontalalignment ='left')
         
+        ax.scatter([0], [0], [0], color='k', s=10)
+        
         artEsfera=[]
         for i, ai in enumerate(a):
             artEsfera.append(ax.plot_surface(*(ai*esfunit)+np.expand_dims(rs[i, 0, :], (1,2)), color='xkcd:teal'))
@@ -350,9 +363,68 @@ class Simulador:
         ani = animation.FuncAnimation(fig=fig, func=update, frames=indTfps, interval=1000/FPS)
         ani.save(nome+'.gif')
 
-    
+    def graficos(rs, vs, t, TColsisoes, a):
+        cmap = mpl.colormaps['viridis']
+        Npar = len(a)
+        
+        CorTempo = cmap(np.linspace(0, 1, len(t))) #Mapa de cor para indicar o tempo da simulação
+
+        #Achar tempos para plotar circulos
+        ti = np.linspace(0, np.max(t), 5)
+        indTi = np.argmin((np.abs(t - np.expand_dims(ti, 1))),axis= 1)
+
+        #Achando indices da colisão
+        indCol = np.any(np.equal(np.expand_dims(t, 1), np.expand_dims(TColsisoes,0)), axis=1)
+        indtempocol = np.arange(0, len(indCol),1)[indCol]
+        rColisao  = rs[:, indCol,:]
+
+        #achando todos os pontos em que queremos plotar as esferas como circulos
+        indplotR = np.concatenate((indTi, indtempocol))
+        rplotR = rs[:, indplotR, :]
 
 
+        #Plot do plano xz
+        plt.figure(dpi=300)
+        plt.axes().set_aspect('equal')
+        #Definição do circulo unitário
+        ang=np.linspace(0, 2*np.pi, 50)
+        circ = np.transpose([np.sin(ang), np.zeros(len(ang)), np.cos(ang)])
+
+        for i in range(Npar):
+            plt.plot(rs[i, :, 0], rs[i, :, 2], linestyle='', marker='.',markersize=2)
+            plt.plot(rColisao[i, :, 0], rColisao[i, :, 2], linestyle='', marker='.',markersize=2)
+            
+            cirplotR=rplotR[i, :,:] + np.expand_dims(a[i]*circ, 1)
+            for c, indc in enumerate(indplotR):
+                plt.plot(cirplotR[:,c, 0], cirplotR[:, c,2], linestyle='', marker='.',markersize=1, color=CorTempo[indc])
+
+
+        plt.xlabel("x [mm]")
+        plt.ylabel("z [mm]")
+
+        plt.show()
+
+        #x x t
+        plt.figure(dpi=300)
+        for i in range(Npar):
+            plt.plot(t, rs[i, :, 0], linestyle='', marker='.',markersize=2)
+            plt.plot(TColsisoes, rColisao[i, :, 0], linestyle='', marker='.',markersize=2)
+
+        plt.ylabel("x [mm]")
+        plt.xlabel("t [s]")
+
+        plt.show()
+
+        #z x t
+        plt.figure(dpi=300)
+        for i in range(Npar):
+            plt.plot(t, rs[i, :, 2], linestyle='', marker='.',markersize=2)
+            plt.plot(TColsisoes, rColisao[i, :, 2], linestyle='', marker='.',markersize=2)
+
+        plt.ylabel("z [mm]")
+        plt.xlabel("t [s]")
+
+        plt.show()
 
 
 
