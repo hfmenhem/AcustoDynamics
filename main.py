@@ -224,7 +224,7 @@ class Simulador:
                     Dv = self.calculaColisao(indColisao, r, v)
                     v = v+Dv
                 elif np.size(indEncostado) !=0: #Quando Há colisão, MV muda, então temos que re-calcular isso, por isso pulamos isso e no próximo loop que fazemos 
-                    DA, indEncostadoV0 = self.calculaEncostado(indEncostado, r, v, A)
+                    DA = self.calculaEncostado(indEncostado, r, v, A)
                     A = A+DA
                     if np.all(np.isclose(DA, 0)):#Se não houve mais nenhuma modificação na aceleração, pode sair do loop
                         CalculaColEnc=False
@@ -293,22 +293,77 @@ class Simulador:
     def calculaEncostado(self, indices, r, v, a):
         Da = np.zeros(np.shape(a))
         indV0 =[]
-        for ind in indices:
-            Dr = r[ind[0],0, :] - r[ind[1],0, :]
-            drhat = Dr/np.linalg.norm(Dr)
+        
+        Dr = r[indices[:, 1],0, :] - r[indices[:, 0],0, :]
+        
+        drhat = Dr/np.linalg.norm(Dr, axis=1, keepdims=True)
+        
+        Da = a[indices[:, 1],0, :] - a[indices[:, 0],0, :]
+        Da = np.einsum('ij,ij->i', Da, drhat)
+        
+        
+        M = np.einsum('ijk,ijk->ij', np.expand_dims(drhat, 1), np.expand_dims(drhat, 0)) #= produto escalar element-wise do útlimo eixo
+
+
+        O1 = np.zeros((len(indices),len(indices)))
+        O2 = np.zeros((len(indices),len(indices)))
+        
+        O1[np.expand_dims(indices[:,0] , 1)==np.expand_dims(indices[:,0] , 0) ]+= -1
+        O1[np.expand_dims(indices[:,0] , 1)==np.expand_dims(indices[:,1] , 0) ]+= 1
+        
+        O1 = O1/self.m[indices[:,0]]
+        
+        O2[np.expand_dims(indices[:,1] , 1)==np.expand_dims(indices[:,0] , 0) ]+= -1
+        O2[np.expand_dims(indices[:,1] , 1)==np.expand_dims(indices[:,1] , 0) ]+= 1
+        
+        O2 = O2/self.m[indices[:,1]]
+        
+        #M = M*(O1-O2)
+        
+        Ns = np.linalg.solve(M*(O1-O2), Da)
+                
+        while np.any(Ns<0): #Caso tenha dado alguma normal negativa, repete o processo
+            inderro = np.argwhere(Ns<0)
+            M = np.delete(M, inderro, 0)
+            M = np.delete(M, inderro, 1)
             
-            a0i = np.dot( a[ind[0], 0, :], drhat)  
-            a1i = np.dot( a[ind[1], 0, :], drhat)  
-            N = drhat*self.m[ind[0]]*self.m[ind[1]]*(a1i-a0i)/(self.m[ind[0]]+self.m[ind[1]])
+            O1 = np.delete(O1, inderro, 0)
+            O1 = np.delete(O1, inderro, 1)
             
-            if np.dot(drhat, N)< 0: #Significa que a força está para dentro
-                N = np.array([0,0,0])
+            O2 = np.delete(O2, inderro, 0)
+            O2 = np.delete(O2, inderro, 1)
+            
+            Da = np.delete(Da, inderro)
+            drhat = np.delete(drhat, inderro,0)
+            indices =np.delete(indices, inderro,0)
+            Ns = np.linalg.solve(M*(O1-O2), Da)
+             
+        Nvec = (np.expand_dims(Ns, 1)*drhat)
+
+        Mind = np.zeros((len(r),len(indices)))
+        Mind[indices[:,0],range(len(indices[:,1]))] += -1
+        Mind[indices[:,1],range(len(indices[:,1]))] += +1
+        
+        DA = np.einsum('ij,ki->kj', Nvec, Mind)/self.m
+        teste= np.expand_dims(DA, 1)
+        
+        
+        # for ind in indices:
+        #     Dr = r[ind[0],0, :] - r[ind[1],0, :]
+        #     drhat = Dr/np.linalg.norm(Dr)
+            
+        #     a0i = np.dot( a[ind[0], 0, :], drhat)  
+        #     a1i = np.dot( a[ind[1], 0, :], drhat)  
+        #     N = drhat*self.m[ind[0]]*self.m[ind[1]]*(a1i-a0i)/(self.m[ind[0]]+self.m[ind[1]])
+            
+        #     if np.dot(drhat, N)< 0: #Significa que a força está para dentro
+        #         N = np.array([0,0,0])
               
-            Da[ind[0], 0, :] = Da[ind[0], 0, :] + N/self.m[ind[0]]
-            Da[ind[1], 0, :] = Da[ind[1], 0, :] - N/self.m[ind[1]]
-            indV0.append(ind)
+        #     Da[ind[0], 0, :] = Da[ind[0], 0, :] + N/self.m[ind[0]]
+        #     Da[ind[1], 0, :] = Da[ind[1], 0, :] - N/self.m[ind[1]]
+        #     indV0.append(ind)
             
-        return Da, indV0
+        return np.expand_dims(DA, 1)
     
     def saveSimulacao(self, rs, vs, t, nome):
         salvar = {'rs': rs, 'vs': vs, 't': t, 'f1': self.f1, 'f2': self.f2, 'f': self.f, 'c': self.c, 'a': self.a, 'm': self.m, 'rho': self.rho, 'v0': self.v0}

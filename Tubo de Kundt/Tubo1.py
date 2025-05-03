@@ -16,6 +16,8 @@ a = np.array(Npar*[[5]]) # [mm]
 rhoPol = (20*(10**-6))
 cPol = 2350*(10**3) #[mm/s] 
 m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
+m = np.array([[.1], [.3], [.3], [0.3], [0.3]])
+
 
 f1 = 1- ((dicMeio['rho']*(dicMeio['c']**2))/ (rhoPol*(cPol**2)))
 f2 = 2*((rhoPol-dicMeio['rho'])/((2*rhoPol)+dicMeio['rho']))
