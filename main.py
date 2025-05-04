@@ -6,7 +6,7 @@ import pickle
 
 class Simulador:
     
-    def __init__(self, f1, f2, f, c, a, m, rho, v0, h, dinvis):   
+    def __init__(self, f1, f2, f, c, a, m, rho, v0, h, dinvis, plano = None, e=0.3):   
         self.f1 = f1
         self.f2 = f2
         self.f = f
@@ -17,9 +17,18 @@ class Simulador:
         self.rho = rho
         self.v0 = v0
         self.h = h
-        self.e = 0.0
+        self.e = e
         self.limDV = v0*1e-9 #Limite de varição de velocidade durante uma colisão. Caso o valor seja menor que isso em módulo, a colisão é recalculada considerando e=0
         self.dinvis = dinvis
+        
+        #Plano:
+        if plano is not None:
+            self.Np = np.array(plano[0])
+            self.Np = self.Np/np.linalg.norm(self.Np)
+            self.Pp = np.array(plano[1])
+            self.HaPlano = True
+        else:
+            self.HaPlano = False
     
     def agua(Npar):
         #unidades mm, s, g
@@ -166,7 +175,7 @@ class Simulador:
         
         return rs, vs, np.array(range(frames))*dt
     
-    def SimularComColisão(self, r0, v0, dt, tempo, arrasto=False):
+    def SimularComColisão(self, r0, v0, dt, tempo, g=[0,0,0]):
         frames = int(tempo/dt)
         nPar = np.shape(v0)[0]
         r = r0
@@ -182,9 +191,10 @@ class Simulador:
         ts[0] = tr
         
         TColsisoes =[] #Para guardar o tempo em que as partículas se encostam
-
+            
         #Inicio do loop
-        for t in range(0, frames-1):
+        t=0
+        while tr<tempo:
             MR = r - np.transpose(r, (1,0,2))
             Pin = self.PhiIn(r) #[mm^2/s]
             GPin = self.GradPhiIn(r)
@@ -201,10 +211,7 @@ class Simulador:
             Fac = self.FGorKov(Pt, GPt, HPt) #[uN]
             
             Far = -6*np.pi*self.dinvis*np.expand_dims(self.a, 2)*v
-                
-            A = (Fac+Far)/np.expand_dims(self.m, 2)
-            
-            #Testar se alguma esfera está encostada na outra, com velocidade radial nul
+            A =( (Fac+Far)/np.expand_dims(self.m, 2)) + np.expand_dims(g, (0,1))
             
             CalculaColEnc=True
             while(CalculaColEnc):
@@ -212,14 +219,19 @@ class Simulador:
                 MRl = MRl + np.triu(np.ones(np.shape(MR[:,:,0]))*np.inf) #Matriz triangular das distâncias entre partículas
                 
                 MV = v - np.transpose(v, (1,0,2))
-                MVn = np.einsum('ijk,ijk->ij', MV, MR/np.linalg.norm(MR, axis=2, keepdims=True)) #Matriz triangular das Velocidades normais
+                MVn = np.einsum('ijk,ijk->ij', MV, MR/np.linalg.norm(MR, axis=2, keepdims=True)) + np.triu(np.ones(np.shape(MR[:,:,0]))*np.inf) #Matriz triangular das Velocidades normais
                 
+                if self.HaPlano:
+                    RP = np.transpose(np.dot((r-self.Pp), self.Np))
+                    MRl = np.append(MRl, RP, axis=0)
+                    VP = np.transpose(np.dot(v, self.Np))
+                    MVn = np.append(MVn, VP, axis=0)
+                    
                 #Primiero calcular colisões
        
-                indColisao = np.argwhere(np.logical_and(np.logical_and(np.isclose(MRl,0) ,MVn<0), np.logical_not(np.isclose(MVn, 0)))) #A rigor, era pra ser MRL==0. Porém, para contornar problemas de erros numéricos, fazemos MRl<=0, porque existem casos que esse valor vai ser muito pequeno (em vez de 0, devido a erro numérico), porém negativo. Perceba que se MRl for muito pequeno, porém positivo, será feita mais uma passagem do loop até chegar no valor 0 ou muito pequeno negativo. Perceba também que nunca ocorrerá um valor de MRl de fato negativo (ou seja, negativo sem ser por erro numérico), visto que para isso uma esfera deveria atravessar outra, porém o programa impede isso de ocorrer quando MRl ==0 (caso preciso) ou MRl aprox 0 porém negativo (caso com um pequeno erro numérico)
-                indEncostado = np.argwhere(np.logical_and(np.isclose(MRl,0) , np.isclose(MVn, 0))) 
+                indColisao = np.argwhere(np.logical_and(np.logical_and(MRl<=0 ,MVn<0), np.logical_not(np.isclose(MVn, 0)))) #A rigor, era pra ser MRL==0. Porém, para contornar problemas de erros numéricos, fazemos MRl<=0, porque existem casos que esse valor vai ser muito pequeno (em vez de 0, devido a erro numérico), porém negativo. Perceba que se MRl for muito pequeno, porém positivo, será feita mais uma passagem do loop até chegar no valor 0 ou muito pequeno negativo. Perceba também que nunca ocorrerá um valor de MRl de fato negativo (ou seja, negativo sem ser por erro numérico), visto que para isso uma esfera deveria atravessar outra, porém o programa impede isso de ocorrer quando MRl ==0 (caso preciso) ou MRl aprox 0 porém negativo (caso com um pequeno erro numérico)
+                indEncostado = np.argwhere(np.logical_and(MRl<=0 , np.isclose(MVn, 0))) 
 
-                
                 if np.size(indColisao) !=0:
                     Dv = self.calculaColisao(indColisao, r, v)
                     v = v+Dv
@@ -239,6 +251,10 @@ class Simulador:
             
             MA = A - np.transpose(A, (1,0,2))
             MAn = np.einsum('ijk,ijk->ij', MA, MR/np.linalg.norm(MR, axis=2, keepdims=True))
+            if self.HaPlano:
+                AP = np.transpose(np.dot(A, self.Np))
+                MAn = np.append(MAn, AP, axis=0)
+            
             Dr = (MVn**2)/(-2*MAn)
             
             argerroR = np.argwhere( np.logical_and(np.logical_and(MAn<0, MVn>0), Dr<-1*MRl))#Isso significa que há duas esferas dentro uma da outra, se afastando, porém a velocidade de afastamento não é suficiente para se afastarem completamente
@@ -269,67 +285,95 @@ class Simulador:
                 r = r+dr
                 tr = tr+dt
 
-            
-            
-            
+            if np.shape(rs)[1]==t+1:
+                rs = np.append(rs, np.zeros((nPar, 100 , 3)), axis=1)
+                vs = np.append(vs, np.zeros((nPar, 100 , 3)), axis=1)
+                ts = np.append(ts, np.zeros(100))
             rs[:,t+1,:] = r[:,0,:]
             vs[:,t+1,:] = v[:,0,:]
             ts[t+1] = tr
+            t+=1
             
+        rs=rs[:, 0:t, :] #como logo em cima foi somado 1 a t, os dados estão entre 0:t, que originalmente era 0:t+1
+        vs=vs[:, 0:t, :]
+        ts=ts[0:t]
         
         return rs, vs, ts, TColsisoes
     
     def calculaColisao(self, indices, r, v):
         Dv = np.zeros(np.shape(v))
         for ind in indices:
-            Dr = r[ind[0],0, :] - r[ind[1],0, :]
+            if ind[0]>=np.shape(r)[0]:#está colidindo com um plano (pela contrução de MRl, sempre será o primeiro índice)
             
+                v1i = np.dot( v[ind[1], 0, :], self.Np)
+                Dv1 = self.Np*(1+self.e)*(-v1i)
+                
+                if np.linalg.norm(Dv1) < self.limDV  and self.e!=0:
+                    Dv1 = self.Np*(-v1i)
+
+                Dv[ind[1], 0, :] = Dv[ind[1], 0, :] + Dv1
             
-            v0i = np.dot( v[ind[0], 0, :], Dr)/np.linalg.norm(Dr)
-            v1i = np.dot( v[ind[1], 0, :], Dr)/np.linalg.norm(Dr)
-            
-            drhat = Dr/np.linalg.norm(Dr)
-            
-            Dv0 = drhat*(1+self.e)*self.m[ind[1]]*(v1i-v0i)/(self.m[ind[1]]+self.m[ind[0]])
-            Dv1 = drhat*(1+self.e)*self.m[ind[0]]*(v0i-v1i)/(self.m[ind[1]]+self.m[ind[0]])
-            
-            if( np.linalg.norm(Dv0) < self.limDV) and( np.linalg.norm(Dv1) < self.limDV ) and self.e!=0:
-                Dv0 = drhat*self.m[ind[1]]*(v1i-v0i)/(self.m[ind[1]]+self.m[ind[0]])
-                Dv1 = drhat*self.m[ind[0]]*(v0i-v1i)/(self.m[ind[1]]+self.m[ind[0]])
-            
-            Dv[ind[0], 0, :] = Dv[ind[0], 0, :] + Dv0
-            Dv[ind[1], 0, :] = Dv[ind[1], 0, :] + Dv1
+            else:
+                Dr = r[ind[0],0, :] - r[ind[1],0, :]
+                                
+                v0i = np.dot( v[ind[0], 0, :], Dr)/np.linalg.norm(Dr)
+                v1i = np.dot( v[ind[1], 0, :], Dr)/np.linalg.norm(Dr)
+                
+                drhat = Dr/np.linalg.norm(Dr)
+                
+                Dv0 = drhat*(1+self.e)*self.m[ind[1]]*(v1i-v0i)/(self.m[ind[1]]+self.m[ind[0]])
+                Dv1 = drhat*(1+self.e)*self.m[ind[0]]*(v0i-v1i)/(self.m[ind[1]]+self.m[ind[0]])
+                
+                if( np.linalg.norm(Dv0) < self.limDV) and( np.linalg.norm(Dv1) < self.limDV ) and self.e!=0:
+                    Dv0 = drhat*self.m[ind[1]]*(v1i-v0i)/(self.m[ind[1]]+self.m[ind[0]])
+                    Dv1 = drhat*self.m[ind[0]]*(v0i-v1i)/(self.m[ind[1]]+self.m[ind[0]])
+                
+                Dv[ind[0], 0, :] = Dv[ind[0], 0, :] + Dv0
+                Dv[ind[1], 0, :] = Dv[ind[1], 0, :] + Dv1
             
         return Dv
     
     def calculaEncostado(self, indices, r, v, a):
         Da = np.zeros(np.shape(a))
         
-        Dr = r[indices[:, 1],0, :] - r[indices[:, 0],0, :]
+        if self.HaPlano:
+            rlinha = np.append(r, np.full((1,1,3), np.nan), axis=0) #Colocamos um valor qualquer para a posição do plano, depois substituimos diretamente o valor de drhat como a normal
+            Dr = rlinha[indices[:, 1],0, :] - rlinha[indices[:, 0],0, :]
+            drhat = Dr/np.linalg.norm(Dr, axis=1, keepdims=True)
+            teste=self.Np
+            teste2=np.expand_dims(self.Np,0)
+            drhat=np.where(np.expand_dims((indices[:,0]>=np.shape(r)[0]), 1), np.expand_dims(self.Np, 0), drhat)
+            
+            alinha =np.append(a, np.zeros((1,1,3)), axis=0)#o plano possui aceleração 0
+            Da = alinha[indices[:, 1],0, :] - alinha[indices[:, 0],0, :]
+        else:
+            Dr = r[indices[:, 1],0, :] - r[indices[:, 0],0, :]
+            drhat = Dr/np.linalg.norm(Dr, axis=1, keepdims=True)
+            
+            Da = a[indices[:, 1],0, :] - a[indices[:, 0],0, :]
         
-        drhat = Dr/np.linalg.norm(Dr, axis=1, keepdims=True)
         
-        Da = a[indices[:, 1],0, :] - a[indices[:, 0],0, :]
         Da = np.einsum('ij,ij->i', Da, drhat)
         
-        
         M = np.einsum('ijk,ijk->ij', np.expand_dims(drhat, 1), np.expand_dims(drhat, 0)) #= produto escalar element-wise do útlimo eixo
-
-
+        
         O1 = np.zeros((len(indices),len(indices)))
         O2 = np.zeros((len(indices),len(indices)))
         
         O1[np.expand_dims(indices[:,0] , 1)==np.expand_dims(indices[:,0] , 0) ]+= -1
         O1[np.expand_dims(indices[:,0] , 1)==np.expand_dims(indices[:,1] , 0) ]+= 1
         
-        O1 = O1/self.m[indices[:,0]]
-        
         O2[np.expand_dims(indices[:,1] , 1)==np.expand_dims(indices[:,0] , 0) ]+= -1
         O2[np.expand_dims(indices[:,1] , 1)==np.expand_dims(indices[:,1] , 0) ]+= 1
         
-        O2 = O2/self.m[indices[:,1]]
-        
-        #M = M*(O1-O2)
+        if self.HaPlano:
+            mlinha = np.append(self.m, np.full((1,1), np.inf), axis=0)
+            O1 = O1/mlinha[indices[:,0]]
+            O2 = O2/mlinha[indices[:,1]]
+        else:
+            O1 = O1/self.m[indices[:,0]]
+            O2 = O2/self.m[indices[:,1]]
+       
         
         Ns = np.linalg.solve(M*(O1-O2), Da)
                 
@@ -351,9 +395,10 @@ class Simulador:
              
         Nvec = (np.expand_dims(Ns, 1)*drhat)
 
-        Mind = np.zeros((len(r),len(indices)))
+        Mind = np.zeros((len(r)+1,len(indices)))#Adicina=se um elemento a mais na linha das partículas para comportar o plano
         Mind[indices[:,0],range(len(indices[:,1]))] += -1
         Mind[indices[:,1],range(len(indices[:,1]))] += +1
+        Mind = np.delete(Mind, len(r), axis=0) #No final é apagada a linha do plano
         
         DA = np.einsum('ij,ki->kj', Nvec, Mind)/self.m
             

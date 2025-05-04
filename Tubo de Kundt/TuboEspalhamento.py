@@ -10,7 +10,7 @@ import matplotlib.colors as colors
 #Este código testa se o programa calcula corretamente a força acústica secundária
 
 
-f=120 #Hz
+f=240 #Hz
 dicMeio = Simulador.ar(1)
 pressao = 800#Pa = g/mm*s^2
 

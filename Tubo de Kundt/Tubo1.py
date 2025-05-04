@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 Npar = 5
-f=120 #Hz
+f=240 #Hz
+#
 dicMeio = Simulador.ar(Npar)
 pressao = 800#Pa = g/mm*s^2
 
@@ -30,10 +31,10 @@ h=0
 r0 = np.array([[[0,0,0]], [[-20,0,0]], [[20,0,0]], [[0,0,-20]], [[0,0,20]]])
 v0 = np.array(Npar*[[[0.0,0,0]]])
 
-sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), 20*(10**3), dicMeio['c'], a, m, dicMeio['rho'], pressao/(dicMeio['rho']*dicMeio['c']), h, dicMeio['dinvis'])
-dt = 0.001
-tempo = .5
+sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], pressao/(dicMeio['rho']*dicMeio['c']), h, dicMeio['dinvis'], plano=[[1,0,0], [-30,0,0]], e=0.1)
+dt = 0.01
+tempo = 1
 
-rs, vs, t, TColsisoes = sim.SimularComColisão(r0, v0, dt, tempo)
+rs, vs, t, TColsisoes = sim.SimularComColisão(r0, v0, dt, tempo, g=[-9.81 * (10**3),0,0])
 Simulador.graficos(rs, vs, t, TColsisoes, a)
 sim.saveSimulacao(rs, vs, t, f'Tubo1-{pressao}')
