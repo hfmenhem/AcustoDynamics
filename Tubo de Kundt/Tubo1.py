@@ -13,7 +13,7 @@ f=240 #Hz
 dicMeio = Simulador.ar(Npar)
 pressao = 800#Pa = g/mm*s^2
 
-a = np.array(Npar*[[5]]) # [mm]
+a = np.array(Npar*[[3]]) # [mm]
 rhoPol = (20*(10**-6))
 cPol = 2350*(10**3) #[mm/s] 
 m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
@@ -29,10 +29,11 @@ h=0
 
 
 #r0 = np.array([[[0,0,0]], [[-20,0,0]], [[20,0,0]], [[0,0,-20]], [[0,0,20]]])
-r0 = np.array([[[0,0,0]], [[0,0,10]], [[0,0,-10]], [[10,0,-5]], [[10,0,5]]])
+r0 = np.array([[[0,0,0]], [[0,0,20]], [[0,0,-20]], [[20,0,-10]], [[20,0,10]]])
+#r0 = np.array([[[0,0,0]], [[0,0,20]], [[0,0,-20]]])
 v0 = np.array(Npar*[[[0.0,0,0]]])
 
-sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], pressao/(dicMeio['rho']*dicMeio['c']), h, dicMeio['dinvis'], plano=[[1,0,0], [-5,0,0]], e=0.1)
+sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], pressao/(dicMeio['rho']*dicMeio['c']), h, dicMeio['dinvis'], plano=[[1,0,0], [-10,0,0]], e=0.0)
 dt = 0.01
 tempo = 10
 
