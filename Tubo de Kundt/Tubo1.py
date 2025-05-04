@@ -28,12 +28,13 @@ print(f'lambda = { dicMeio["c"]/f} mm ')
 h=0
 
 
-r0 = np.array([[[0,0,0]], [[-20,0,0]], [[20,0,0]], [[0,0,-20]], [[0,0,20]]])
+#r0 = np.array([[[0,0,0]], [[-20,0,0]], [[20,0,0]], [[0,0,-20]], [[0,0,20]]])
+r0 = np.array([[[0,0,0]], [[0,0,10]], [[0,0,-10]], [[10,0,-5]], [[10,0,5]]])
 v0 = np.array(Npar*[[[0.0,0,0]]])
 
-sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], pressao/(dicMeio['rho']*dicMeio['c']), h, dicMeio['dinvis'], plano=[[1,0,0], [-30,0,0]], e=0.1)
+sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], pressao/(dicMeio['rho']*dicMeio['c']), h, dicMeio['dinvis'], plano=[[1,0,0], [-5,0,0]], e=0.1)
 dt = 0.01
-tempo = 1
+tempo = 10
 
 rs, vs, t, TColsisoes = sim.SimularComColisão(r0, v0, dt, tempo, g=[-9.81 * (10**3),0,0])
 Simulador.graficos(rs, vs, t, TColsisoes, a)

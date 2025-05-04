@@ -294,9 +294,9 @@ class Simulador:
             ts[t+1] = tr
             t+=1
             
-        rs=rs[:, 0:t, :] #como logo em cima foi somado 1 a t, os dados estão entre 0:t, que originalmente era 0:t+1
-        vs=vs[:, 0:t, :]
-        ts=ts[0:t]
+        rs=rs[:, 0:t+1, :] #como logo em cima foi somado 1 a t, os dados estão entre 0:t+1, que originalmente era 0:t+2 (porque ele não inclui o último valor)
+        vs=vs[:, 0:t+1, :]
+        ts=ts[0:t+1]
         
         return rs, vs, ts, TColsisoes
     
@@ -340,8 +340,7 @@ class Simulador:
             rlinha = np.append(r, np.full((1,1,3), np.nan), axis=0) #Colocamos um valor qualquer para a posição do plano, depois substituimos diretamente o valor de drhat como a normal
             Dr = rlinha[indices[:, 1],0, :] - rlinha[indices[:, 0],0, :]
             drhat = Dr/np.linalg.norm(Dr, axis=1, keepdims=True)
-            teste=self.Np
-            teste2=np.expand_dims(self.Np,0)
+            
             drhat=np.where(np.expand_dims((indices[:,0]>=np.shape(r)[0]), 1), np.expand_dims(self.Np, 0), drhat)
             
             alinha =np.append(a, np.zeros((1,1,3)), axis=0)#o plano possui aceleração 0
