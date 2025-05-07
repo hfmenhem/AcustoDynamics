@@ -31,6 +31,7 @@ rho = 998*(10**(-6)) #g/mm^3
 v0 = (50*(10**3))*k/(2*np.pi*f*rho) #Pressão = 50*(10**3) Pa = 50*(10**3) g/mm*s^2
 
 h=(np.pi/2)/k
+h=0
 
 sim = Simulador(f1, f2, f, c, a, m, rho, v0, h, 0)
 
@@ -189,7 +190,7 @@ U0 = U.flatten()[arg][0]
 
 #Plotar o potencial
 #filtro:
-Filtro = np.abs(U-U0)<5*(10**(-9))
+Filtro = np.abs(U)<1*(10**(-10))
 nan = np.empty(np.shape(U))
 nan[:,:]= np.nan
 UrF = np.where(Filtro,U-U0, nan)

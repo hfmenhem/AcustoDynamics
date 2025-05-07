@@ -39,8 +39,8 @@ class Simulador:
     
     def ar(Npar):
         #unidades mm, s, g
-        dicAr = {'f1': np.array(Npar*[[1.0]]), 'f2':np.array(Npar*[[1.0]]), 'f': 40*(10**3), 'c':340*(10**3), 'rho': 1.29*(10**(-6)), 'v0': (800)/( 1.29*(10**(-6))*340*(10**3)), 'k':2*np.pi*(40*(10**3))/(340*(10**3)), 'dinvis': 1.849*(10**-5)}
-        #v0 = (800)/(c*rho) #Pressão = 800 Pa = 800 g/mm*s^2
+        dicAr = {'f1': np.array(Npar*[[1.0]]), 'f2':np.array(Npar*[[1.0]]), 'f': 10*(10**3), 'c':340*(10**3), 'rho': 1.29*(10**(-6)), 'v0': 1e3, 'k':2*np.pi*(10*(10**3))/(340*(10**3)), 'dinvis': 1.849*(10**-5)}
+        #v0 = = 1e3mm/s = (408)/(c*rho) #Pressão = 800 Pa = 800 g/mm*s^2
         #viscosidade do ar [kg/m*s = g/mm*s] a 25°C tirada de https://www.engineersedge.com/physics/viscosity_of_air_dynamic_and_kinematic_14483.htm
         return dicAr
     
@@ -82,6 +82,7 @@ class Simulador:
         RxR = np.expand_dims(R, 2) * np.expand_dims(R, 3)
         I = np.expand_dims(np.identity(3, dtype=float), (0,1))
         Rgp = np.expand_dims(R, 2) * np.expand_dims(gpin, 3)
+        Rdotgp = np.expand_dims(np.einsum('ijk,ijk->ij', gpin, R), (2,3))
         
         coef1 = np.transpose(-self.f1*(self.a**3)*(self.k**2)/(3))
         coef2 = (-1j)*np.transpose(self.f2*(self.a**3))/(2)
@@ -90,14 +91,12 @@ class Simulador:
         part11 = np.expand_dims((3-(3j*self.k*Rn)-((self.k*Rn)**2))/(Rn**2), (2,3))*RxR 
         part12 = np.expand_dims(1j*(1j+(self.k*Rn)), (2,3))*I
         part1 = np.expand_dims(coef1*pin*(np.e**(1j*self.k*Rn))/(Rn**3), (2,3))*( part11 + part12)
+
+        part21 = np.expand_dims((15j+(15*self.k*Rn)+(-6j*(self.k*Rn)**2)+(-1*(self.k*Rn)**3))/(Rn**2), (2,3))*RxR*Rdotgp
+        part22 = np.expand_dims((-3j + (-3*(self.k*Rn))+(1j*(self.k*Rn)**2)), (2,3))*(Rgp+np.transpose(Rgp, axes=(0,1,3,2))+(Rdotgp*I))
         
-        part211 = np.expand_dims((15J+(15*self.k*Rn) - (((self.k*Rn)**2)*(6j+(self.k*Rn))))/(Rn**2), (2,3))*RxR 
-        part212 =  np.expand_dims((-3j-(3*self.k*Rn)-(1j*((self.k*Rn)**2))), (2,3))*I
-        part21 = np.expand_dims(np.einsum('ijk,ijk->ij', gpin, R), (2,3)) * (part211 + part212)
-        
-        part22 =  np.expand_dims((-3+(3j*self.k*Rn)+((self.k*Rn)**2)), (2,3))*(Rgp+np.transpose(Rgp, axes=(0,1,3,2)))
-        part2 = np.expand_dims(coef2*(np.e**(1j*self.k*Rn))/(Rn**5), (2,3))*( part21 + part22)
-        
+        part2 = np.expand_dims(coef2*(np.e**(1j*self.k*Rn))/(Rn**5), (2,3))*(part21+part22)
+       
         resul = part1+part2
         np.nan_to_num(resul, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
         return resul
