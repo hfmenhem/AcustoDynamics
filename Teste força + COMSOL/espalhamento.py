@@ -10,31 +10,54 @@ import pandas as pd
 #Este código testa se o programa calcula corretamente a força acústica secundária
 
 
-f=10*(10**3)
-dicMeio = Simulador.ar(1)
+
+#dicMeio = Simulador.ar(1)
 
 
-a = np.array([[.5]]) # [mm]
 
-m = np.zeros(np.shape(a)) # [g], densidade do ar vezes seu volume
+
+
 
 f1 = 1
 f2 = 1
-rhoar = 1.2 * (10**-6) #g/mm^2
-car = 340 * (10**3) #m/s
-rhoPol = (20*(10**-6))
-cPol = 2350*(10**3) #[mm/s] 
-f1 = 1- ((rhoar*(car**2))/ (rhoPol*(cPol**2)))
-f2 = 2*((rhoPol-rhoar)/((2*rhoPol)+rhoar))
-
-
-Lamb=car/f
-
+f=10*(10**3)
+c = 340 * (10**3) #mm/s
+k= 2*np.pi*f/c
+a = np.array([[.5]]) # [mm]
+rho = 1.2 * (10**-6) #g/mm^3
 v0 = 1e3 #mm/s
 
-h=0
+#rhoPol = (20*(10**-6))
+#cPol = 2350*(10**3) #[mm/s] 
+#f1 = 1- ((rhoar*(car**2))/ (rhoPol*(cPol**2)))
+#f2 = 2*((rhoPol-rhoar)/((2*rhoPol)+rhoar))
 
-sim = Simulador(np.array([[f1]]), np.array([[f2]]),f, dicMeio['c'], a, m, dicMeio['rho'], v0, h, 0)
+
+
+
+
+#Dados de (SIMON et al., 2019)
+# f1 = 0.623
+# f2 = 0.034
+# f = 10*(10**6) #[1/s]
+# c = 1480*(10**3) #[mm/s]
+# k = 2*np.pi*f/c #[1/mm]
+# a = np.array([[0.1*np.pi/k]]) # [mm]
+# #m = (a**3*(4*np.pi/3))*(1*10**3) # [g], massa, não importa
+# rho = 998*(10**(-6)) #g/mm^3
+# #v0 = (np.sqrt(2)/10) * (10**3) # [mm/s] velocidade equivalente para uma energia de 10J
+# #Vo = P0*k/omega*Rho
+# v0 = (50*(10**3))*k/(2*np.pi*f*rho) #Pressão = 50*(10**3) Pa = 50*(10**3) g/mm*s^2
+
+
+
+Lamb=c/f
+
+h=0
+#h=(np.pi/2)/k
+m = np.zeros(np.shape(a)) # [g], densidade do ar vezes seu volume
+
+sim = Simulador(np.array([[f1]]), np.array([[f2]]),f, c, a, m,rho, v0, h, 0)
 rs = np.array([[[0,0,0]]]) #Posições das partículas emissoreas
 
 print(f'Z max = {Lamb} mm ')
@@ -83,6 +106,9 @@ Ftz = F[len(py):,0,2]
 Filtroy = ys >3.5
 Filtroz = zs>1
 
+# Filtroy = ys >.01
+# Filtroz = zs>0.01
+
 Fscy = np.where(Filtroy,Fscy, np.full(np.shape(Fscy), np.nan))
 Fscz = np.where(Filtroz,Fscz, np.full(np.shape(Fscz), np.nan))
 Fty = np.where(Filtroy,Fty, np.full(np.shape(Fty), np.nan))
@@ -101,7 +127,7 @@ Fycomsol=np.array(dataYcomsol[1])*1e6
 figy, axy = plt.subplots(dpi=300, figsize=(10,10))
 plt.plot(ys, Fty, label='Python')
 plt.plot(ycomsol, Fycomsol, label='COMSOL')
-axy.set_title("Força acústica total no eixo y")
+axy.set_title("Força acústica total no eixo y - h=0")
 axy.set_xlabel('y [mm]')
 axy.set_ylabel('Fy [nN]')
 plt.legend(fontsize=12)
@@ -110,7 +136,7 @@ figy.show()
 figy, axy = plt.subplots(dpi=300, figsize=(10,10))
 plt.plot(zs, Ftz, label='Python')
 plt.plot(zcomsol, Fzcomsol, label='COMSOL')
-axy.set_title("Força acústica total no eixo z")
+axy.set_title("Força acústica total no eixo z - h=0")
 axy.set_xlabel('z [mm]')
 axy.set_ylabel('Fz [uN]')
 plt.legend(fontsize=12)

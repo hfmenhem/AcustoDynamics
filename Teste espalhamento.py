@@ -207,3 +207,76 @@ fig3.show()
 
 
 
+
+
+#---------------------------------------------
+ys, dy = np.linspace(*Yrange, 200,retstep=True)
+zs, dz = np.linspace(*Zrange, 400,retstep=True)
+
+py = np.array([0,1,0])*np.expand_dims(ys, 1)
+pz = np.array([0,0,1])*np.expand_dims(zs, 1)
+rp = np.reshape(np.concatenate((py,pz)), (-1,1,3))
+
+
+MR = rp-rs
+Pin = sim.PhiIn(rp) #[mm^2/s]
+GPin = sim.GradPhiIn(rp)
+HPin = sim.HPhiIn(rp)
+
+Psc = sim.PhiSc(MR, np.transpose(sim.PhiIn(rs)), np.transpose(sim.GradPhiIn(rs), axes=(1,0,2)))
+GPsc = sim.GradPhiSc(MR, np.transpose(sim.PhiIn(rs)), np.transpose(sim.GradPhiIn(rs), axes=(1,0,2)))
+HPsc = sim.HPhiSc(MR, np.transpose(sim.PhiIn(rs)), np.transpose(sim.GradPhiIn(rs), axes=(1,0,2)))
+
+Pt  = np.sum(Psc , axis = 1,keepdims=True) + Pin
+GPt = np.sum(GPsc, axis = 1,keepdims=True) + GPin
+HPt = np.sum(HPsc, axis = 1,keepdims=True) + HPin
+
+# Pt  = Pin
+# GPt = GPin
+# HPt = HPin
+
+F = sim.FGorKov(Pt, GPt, HPt) #[uN]
+Fin = sim.FGorKov(Pin, GPin, HPin)
+Fsc = F-Fin
+
+Fscy = Fsc[:len(py),0, 1]
+Fscz = Fsc[len(py):,0, 2]
+Fty = F[:len(py),0,1]
+Ftz = F[len(py):,0,2]
+
+
+
+
+#filtro:
+Filtroy = ys >3.5
+Filtroz = zs>1
+
+Filtroy = ys >.01
+Filtroz = zs>0.01
+
+Fscy = np.where(Filtroy,Fscy, np.full(np.shape(Fscy), np.nan))
+Fscz = np.where(Filtroz,Fscz, np.full(np.shape(Fscz), np.nan))
+Fty = np.where(Filtroy,Fty, np.full(np.shape(Fty), np.nan))
+Ftz =  np.where(Filtroz,Ftz, np.full(np.shape(Ftz), np.nan))
+
+
+
+#Plotar módulo da força
+figy, axy = plt.subplots(dpi=300, figsize=(10,10))
+plt.plot(ys, Fty, label='Python')
+
+axy.set_title("Força acústica total no eixo y")
+axy.set_xlabel('y [mm]')
+axy.set_ylabel('Fy [nN]')
+plt.legend(fontsize=12)
+figy.show()
+
+figy, axy = plt.subplots(dpi=300, figsize=(10,10))
+plt.plot(zs, Ftz, label='Python')
+
+axy.set_title("Força acústica total no eixo z")
+axy.set_xlabel('z [mm]')
+axy.set_ylabel('Fz [uN]')
+plt.legend(fontsize=12)
+figy.show()
+
