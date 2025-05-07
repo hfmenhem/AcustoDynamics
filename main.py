@@ -113,14 +113,24 @@ class Simulador:
         Mr0 = r0 - np.transpose(r0, (1,0,2))
         Mv0 = v0 - np.transpose(v0, (1,0,2))
         Ma0 = a0 - np.transpose(a0, (1,0,2))
-        #Essa matriz é simétrica
+            
+        #Essa matriz é simétrica (se não houver plano)
         MR = self.a + np.transpose(self.a, (1,0))
+        
+        if self.HaPlano:
+            RP = np.expand_dims(np.transpose(np.dot((r0-self.Pp) , self.Np)),2)*np.expand_dims(self.Np, (0,1))
+            Mr0 = np.append(Mr0, RP, axis=0)
+            VP = np.expand_dims(np.transpose(np.dot(v0 , self.Np)),2)*np.expand_dims(self.Np, (0,1))
+            Mv0 = np.append(Mv0, VP, axis=0)
+            AP =  np.expand_dims(np.transpose(np.dot(a0 , self.Np)),2)*np.expand_dims(self.Np, (0,1))
+            Ma0 = np.append(Ma0, AP, axis=0)  
+            MR = np.append(MR, np.transpose(self.a), axis=0)
         #polinomio de 4 grau: cada elemento da lista vai ser multiplicado por [dt^4, dt^3, dt^2, dt, 1]
         #Cada elemento dessa lista é uma matriz simétrica
         indPolynomial = np.array([(np.linalg.norm(Ma0, axis=2)**2)/4, np.einsum('ijk,ijk->ij', Ma0, Mv0),(np.linalg.norm(Mv0, axis=2)**2) +np.einsum('ijk,ijk->ij', Ma0, Mr0),2*np.einsum('ijk,ijk->ij', Mv0, Mr0),(np.linalg.norm(Mr0, axis=2)**2) -(MR**2)])
         
         dtCol = np.apply_along_axis(self.MenorRaizReal, 0, indPolynomial)#Retorna os menores tempos de colisão diferentes de 0
-        dtCol = dtCol+ np.triu(np.ones(len(dtCol))*np.inf)#Basicamente leva todos os valores da diagonal para cima como np.inf
+        dtCol = dtCol+ np.triu(np.full(np.shape(dtCol), np.inf))#Basicamente leva todos os valores da diagonal para cima como np.inf
         return dtCol
     
     def MenorRaizReal(self,ind):
@@ -221,7 +231,7 @@ class Simulador:
                 MVn = np.einsum('ijk,ijk->ij', MV, MR/np.linalg.norm(MR, axis=2, keepdims=True)) + np.triu(np.ones(np.shape(MR[:,:,0]))*np.inf) #Matriz triangular das Velocidades normais
                 
                 if self.HaPlano:
-                    RP = np.transpose(np.dot((r-self.Pp), self.Np))
+                    RP = np.transpose(np.dot((r-self.Pp), self.Np) - self.a)
                     MRl = np.append(MRl, RP, axis=0)
                     VP = np.transpose(np.dot(v, self.Np))
                     MVn = np.append(MVn, VP, axis=0)

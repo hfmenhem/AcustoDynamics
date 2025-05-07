@@ -29,11 +29,11 @@ h=0
 
 
 #r0 = np.array([[[0,0,0]], [[-20,0,0]], [[20,0,0]], [[0,0,-20]], [[0,0,20]]])
-r0 = np.array([[[0,0,0]], [[0,0,20]], [[0,0,-20]], [[20,0,-10]], [[20,0,10]]])
+r0 = np.array([[[10,0,0]], [[10,0,20]], [[10,0,-20]], [[20,0,-10]], [[20,0,10]]])
 #r0 = np.array([[[0,0,0]], [[0,0,20]], [[0,0,-20]]])
 v0 = np.array(Npar*[[[0.0,0,0]]])
 
-sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], pressao/(dicMeio['rho']*dicMeio['c']), h, dicMeio['dinvis'], plano=[[1,0,0], [-10,0,0]], e=0.0)
+sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], pressao/(dicMeio['rho']*dicMeio['c']), h, dicMeio['dinvis'], plano=[[1,0,0], [0,0,0]], e=0.0)
 dt = 0.01
 tempo = 10
 
