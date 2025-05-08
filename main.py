@@ -414,7 +414,10 @@ class Simulador:
         return np.expand_dims(DA, 1)
     
     def saveSimulacao(self, rs, vs, t, nome):
-        salvar = {'rs': rs, 'vs': vs, 't': t, 'f1': self.f1, 'f2': self.f2, 'f': self.f, 'c': self.c, 'a': self.a, 'm': self.m, 'rho': self.rho, 'v0': self.v0}
+        if self.HaPlano:
+            salvar = {'rs': rs, 'vs': vs, 't': t, 'f1': self.f1, 'f2': self.f2, 'f': self.f, 'c': self.c, 'a': self.a, 'm': self.m, 'rho': self.rho, 'v0': self.v0, 'Np': self.Np, 'Pp': self.Pp}
+        else:
+            salvar = {'rs': rs, 'vs': vs, 't': t, 'f1': self.f1, 'f2': self.f2, 'f': self.f, 'c': self.c, 'a': self.a, 'm': self.m, 'rho': self.rho, 'v0': self.v0}
         
 
         with open(nome+'.pkl', 'wb') as file: 
@@ -429,7 +432,7 @@ class Simulador:
         a = salvo['a']
         
         fig = plt.figure(dpi=300)
-        ax = fig.add_subplot(projection='3d', azim=-80, elev=10)
+        ax = fig.add_subplot(projection='3d', azim=-80, elev=10,computed_zorder=False)
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
         #tempos dos frames
         tfps = np.linspace(0, np.max(t), round(np.max(t)*FPS*Tmult + 1))
@@ -446,15 +449,37 @@ class Simulador:
         ax.grid(False)
         ax.set_aspect('equal')    
         ax.set_axis_off()
+        
+        if 'Np' in salvo:
+            Np = salvo['Np']
+            Pp = salvo['Pp']
+
+            
+            if np.linalg.norm(np.cross(Np, [1,0,0]))==0:
+                v1 = np.array([0,0,1])
+            else:
+                v1 = np.cross(Np, [1,0,0])/np.linalg.norm((np.cross(Np, [1,0,0])))
+                      
+            v2 = np.cross(v1, Np)/np.linalg.norm(np.cross(v1, Np))
+        
+            Ptsp = np.array([[v2+v1,v2-v1], [-v2+v1, -v2-v1] ])*(np.linalg.norm( rlim[1,:]-rlim[0,:])/3) + Pp
+            
+            ax.plot_surface(*np.transpose(Ptsp, (2,0,1)), color='xkcd:slate',zorder =0)
       
         ax.quiver(*np.transpose(3*[rlim[0, :]]), [0, 0, 1], [0, 1, 0], [1, 0, 0], length= (np.mean(rlim[1,:]-rlim[0,:])/5),arrow_length_ratio=0.2, linewidths=1, colors='k' )
         ax.text(*rlim[0, :], 'x', 'x', verticalalignment='top', horizontalalignment ='left')
         
         ax.scatter([0], [0], [0], color='k', s=10)
         
+        
+       
+            
+            
+            
         artEsfera=[]
         for i, ai in enumerate(a):
             artEsfera.append(ax.plot_surface(*(ai*esfunit)+np.expand_dims(rs[i, 0, :], (1,2)), color='xkcd:teal'))
+        #plt.show()
         
         maxframe=max(indTfps)
         def update(frame):
