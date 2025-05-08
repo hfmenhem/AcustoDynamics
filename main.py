@@ -203,6 +203,7 @@ class Simulador:
             
         #Inicio do loop
         t=0
+        
         while tr<tempo:
             MR = r - np.transpose(r, (1,0,2))
             Pin = self.PhiIn(r) #[mm^2/s]
@@ -238,8 +239,8 @@ class Simulador:
                     
                 #Primiero calcular colisões
        
-                indColisao = np.argwhere(np.logical_and(np.logical_and(MRl<=0 ,MVn<0), np.logical_not(np.isclose(MVn, 0)))) #A rigor, era pra ser MRL==0. Porém, para contornar problemas de erros numéricos, fazemos MRl<=0, porque existem casos que esse valor vai ser muito pequeno (em vez de 0, devido a erro numérico), porém negativo. Perceba que se MRl for muito pequeno, porém positivo, será feita mais uma passagem do loop até chegar no valor 0 ou muito pequeno negativo. Perceba também que nunca ocorrerá um valor de MRl de fato negativo (ou seja, negativo sem ser por erro numérico), visto que para isso uma esfera deveria atravessar outra, porém o programa impede isso de ocorrer quando MRl ==0 (caso preciso) ou MRl aprox 0 porém negativo (caso com um pequeno erro numérico)
-                indEncostado = np.argwhere(np.logical_and(MRl<=0 , np.isclose(MVn, 0))) 
+                indColisao = np.argwhere(np.logical_and(np.logical_and(np.logical_or(MRl<0, np.isclose(MRl, 0)),MVn<0), np.logical_not(np.isclose(MVn, 0)))) #A rigor, era pra ser MRL==0. Porém, para contornar problemas de erros numéricos, fazemos MRl<=0, porque existem casos que esse valor vai ser muito pequeno (em vez de 0, devido a erro numérico), porém negativo. Perceba que se MRl for muito pequeno, porém positivo, será feita mais uma passagem do loop até chegar no valor 0 ou muito pequeno negativo. Perceba também que nunca ocorrerá um valor de MRl de fato negativo (ou seja, negativo sem ser por erro numérico), visto que para isso uma esfera deveria atravessar outra, porém o programa impede isso de ocorrer quando MRl ==0 (caso preciso) ou MRl aprox 0 porém negativo (caso com um pequeno erro numérico)
+                indEncostado = np.argwhere(np.logical_and(np.logical_or(MRl<0, np.isclose(MRl, 0)) , np.isclose(MVn, 0))) 
 
                 if np.size(indColisao) !=0:
                     Dv = self.calculaColisao(indColisao, r, v)
@@ -256,7 +257,7 @@ class Simulador:
             #Até aqui, A, v, r são as variáveis relevantes. Depois, é considerado A consntante e integrado para achar v' e r'. Porém, isso só acontece se não for ocorrer uma colisão
             
             dtcol = self.tempoParaColisao(r, v, A)
-            dtValido = np.extract(np.logical_and(dtcol < dt, np.logical_not(np.isclose(dtcol, 0))),dtcol)
+            dtValido = np.extract(np.logical_and(dtcol < dt, dtcol >0),dtcol)
             
             MA = A - np.transpose(A, (1,0,2))
             MAn = np.einsum('ijk,ijk->ij', MA, MR/np.linalg.norm(MR, axis=2, keepdims=True))

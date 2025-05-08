@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-Npar = 5
+Npar = 2
 f=240 #Hz
 #
 dicMeio = Simulador.ar(Npar)
@@ -29,13 +29,15 @@ h=0
 
 
 #r0 = np.array([[[0,0,0]], [[-20,0,0]], [[20,0,0]], [[0,0,-20]], [[0,0,20]]])
-r0 = np.array([[[10,0,0]], [[10,0,20]], [[10,0,-20]], [[20,0,-10]], [[20,0,10]]])
+#r0 = np.array([[[10,0,0]], [[10,0,20]], [[10,0,-20]], [[20,0,-10]], [[20,0,10]]])
+#r0 = np.array([[[10,0,0]], [[20,0,1]], [[30,0,1.2]], [[40,0,1]], [[50,0,0.8]], [[60,0,0.7]]])
+r0 = np.array([[[10,0,0]], [[30,0,1]]])
 #r0 = np.array([[[0,0,0]], [[0,0,20]], [[0,0,-20]]])
 v0 = np.array(Npar*[[[0.0,0,0]]])
 
 sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], pressao/(dicMeio['rho']*dicMeio['c']), h, dicMeio['dinvis'], plano=[[1,0,0], [0,0,0]], e=0.0)
 dt = 0.01
-tempo = 10
+tempo = 2
 
 rs, vs, t, TColsisoes = sim.SimularComColisão(r0, v0, dt, tempo, g=[-9.81 * (10**3),0,0])
 Simulador.graficos(rs, vs, t, TColsisoes, a)
