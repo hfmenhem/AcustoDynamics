@@ -1,3 +1,3 @@
 from main import Simulador
-Simulador.video('Tubo de Kundt/Tubo1-800', FPS=10, Tmult=10)
+Simulador.video('Testes de Colisao/data1e0-dt0.0001', FPS=10, Tmult=50)
 #Tubo de Kundt

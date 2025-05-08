@@ -20,10 +20,10 @@ h=0
 r0 = np.array([[[0.1,0,-4]], [[0,0,4]]])
 v0 = np.array([[[0.0,0,0]], [[0.0,0,0]]])
 
-sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], dicMeio['v0'], h, dicMeio['dinvis'],e=1.0)
-dt = 0.001
-tempo = 4
+sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], dicMeio['v0'], h, dicMeio['dinvis'],e=0.0)
+dt = 0.0001
+tempo = 2
 
 rs, vs, t, TColsisoes = sim.SimularComColisão(r0, v0, dt, tempo)
 Simulador.graficos(rs, vs, t, TColsisoes, a)
-sim.saveSimulacao(rs, vs, t, 'data1e1')
+sim.saveSimulacao(rs, vs, t, 'data1e0-dt0.0001')

@@ -142,7 +142,7 @@ class Simulador:
         
         return min(v) #Retorna a menor raiz real maior ou igual a 0
         
-    def Simular(self, r0, v0, dt, tempo):
+    def Simular(self, r0, v0, dt, tempo, g=[0,0,0]):
         frames = int(tempo/dt)
         nPar = np.shape(v0)[0]
         r = r0
@@ -169,9 +169,10 @@ class Simulador:
             GPt = np.sum(GPsc, axis = 1,keepdims=True) + GPin
             HPt = np.sum(HPsc, axis = 1,keepdims=True) + HPin
             
-            F = self.FGorKov(Pt, GPt, HPt) #[uN]
+            Fac = self.FGorKov(Pt, GPt, HPt) #[uN]
             
-            A = F/np.expand_dims(self.m, 2)
+            Far = -6*np.pi*self.dinvis*np.expand_dims(self.a, 2)*v
+            A =( (Fac+Far)/np.expand_dims(self.m, 2)) + np.expand_dims(g, (0,1))
             
             dr = v*dt + A*(dt**2)/2
             dv = A*dt
