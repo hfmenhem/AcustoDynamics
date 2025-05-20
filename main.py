@@ -3,10 +3,12 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib as mpl
 import pickle 
+import scipy as sc
 
 class Simulador:
     
     def __init__(self, f1, f2, f, c, a, m, rho, v0, h, dinvis, plano = None, e=0.3):   
+        self.tipo = 0
         self.f1 = f1
         self.f2 = f2
         self.f = f
@@ -30,6 +32,13 @@ class Simulador:
         else:
             self.HaPlano = False
     
+    def setTransdutor(self, L, raio):
+        self.tipo=1
+        self.L = L
+        self.at = raio
+  
+            
+    
     def agua(Npar):
         #unidades mm, s, g
         dicAgua = {'f1': np.array(Npar*[[0.623]]), 'f2':np.array(Npar*[[0.034]]), 'f': 10*(10**6), 'c':1480*(10**3), 'rho': 998*(10**(-6)), 'v0': (50*(10**3))/(998*(10**(-6))*1480*(10**3)), 'k':2*np.pi*(10*(10**6))/(1480*(10**3)), 'dimvis': 1.002}
@@ -45,15 +54,25 @@ class Simulador:
         return dicAr
     
     def PhiIn(self,r):
-        return (self.v0/self.k)*np.sin(self.k*(r[:,:, 2]-self.h))
+        if self.tipo ==0:
+            return (self.v0/self.k)*np.sin(self.k*(r[:,:, 2]-self.h))
+        elif self.tipo==1:
+            self.at*self.v0*sc.jv(1,self.at*self.k*np.norm(r[:,:,(0,1)]))
+            
+ #            (E^(I k Sqrt[x^2 + y^2 + z^2])
+ #  BesselJ[1, (a k Sqrt[x^2 + y^2])/Sqrt[x^2 + y^2 + z^2]])/(a k Sqrt[
+ # x^2 + y^2])
+            pass
     
     def GradPhiIn(self,r):
-        f = lambda a: [0,0, self.v0*np.cos(self.k*(a[2]-self.h))]
-        return np.apply_along_axis(f, 2, r)
-    
+        if self.tipo ==0:
+            f = lambda a: [0,0, self.v0*np.cos(self.k*(a[2]-self.h))]
+            return np.apply_along_axis(f, 2, r)
+        
     def HPhiIn(self,r):
-        f =lambda a: [[0,0,0], [0,0,0], [0,0, -self.k*self.v0*np.sin(self.k*(a[2]-self.h)) ]]
-        return np.apply_along_axis(f, 2, r)
+        if self.tipo ==0:
+            f =lambda a: [[0,0,0], [0,0,0], [0,0, -self.k*self.v0*np.sin(self.k*(a[2]-self.h)) ]]
+            return np.apply_along_axis(f, 2, r)
     
     def PhiSc(self, R, pin, gpin):
         Rn = np.linalg.norm(R, axis= 2)
