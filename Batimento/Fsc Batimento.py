@@ -19,8 +19,8 @@ pressao = 800#Pa = g/mm*s^2
 #pressao = 2000#Pa = g/mm*s^2
 
 a = np.array([[1]]) # [mm]
-rhoPol = (20*(10**-6))
-cPol = 2350*(10**3) #[mm/s] 
+rhoPol = (900*(10**-6)) #[g/mm^3] #Material: PP
+cPol = 2740*(10**3) #[mm/s] 
 m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 
 f1 = 1- ((dicMeio['rho']*(dicMeio['c']**2))/ (rhoPol*(cPol**2)))
@@ -103,7 +103,8 @@ ax.set_xlabel(r'$z_s$ [mm]')
 ax.set_ylabel(r'$\Delta z$ [mm]')
 fig.colorbar(pcm, ax=ax, label=r'$\hat z\cdot  Fsc z$ [uN]', format="{x:.1e}")
 
-fig.show()
+fig.savefig('teste1.png')
+#fig.show()
 
 #=================Plot zs X zp ===========================================
 
@@ -153,21 +154,22 @@ ax.set_xlabel(r'$z_s$ [mm]')
 ax.set_ylabel(r'$z_p$ [mm]')
 fig.colorbar(pcm, ax=ax, label=r'$\hat z\cdot  Fsc z$ [uN]', format="{x:.1e}")
 
-fig.show()
+fig.savefig('teste2.png')
+#fig.show()
 
 
-def Fteste(D,z):
-    return (0.1*np.sin(2*np.pi*z/(Lamb)))+np.cos(np.pi*D/(Lamb))
+# def Fteste(D,z):
+#     return (0.1*np.sin(2*np.pi*z/(Lamb)))+np.cos(np.pi*D/(Lamb))
 
-#Plotar  força de teste
-fig, ax = plt.subplots(dpi=300, figsize=(10,10))
-#ax.set_aspect(1)
-pcm = ax.contourf(zs, Dzp, Fteste(np.expand_dims(Dzp, 1), np.expand_dims(zs, 0)), levels=20)
+# #Plotar  força de teste
+# fig, ax = plt.subplots(dpi=300, figsize=(10,10))
+# #ax.set_aspect(1)
+# pcm = ax.contourf(zs, Dzp, Fteste(np.expand_dims(Dzp, 1), np.expand_dims(zs, 0)), levels=20)
 
-ax.set_title("força acústica secundária no eixo z" + f' - h = {h/Lamb:.2f}'+r'$\lambda$')
-ax.set_xlabel(r'$z_s$ [mm]')
-ax.set_ylabel(r'$z_p$ [mm]')
-fig.colorbar(pcm, ax=ax, label=r'$\hat z\cdot  Fsc z$ [uN]', format="{x:.1e}")
+# ax.set_title("força acústica secundária no eixo z" + f' - h = {h/Lamb:.2f}'+r'$\lambda$')
+# ax.set_xlabel(r'$z_s$ [mm]')
+# ax.set_ylabel(r'$z_p$ [mm]')
+# fig.colorbar(pcm, ax=ax, label=r'$\hat z\cdot  Fsc z$ [uN]', format="{x:.1e}")
 
-fig.show()
+# fig.show()
  
