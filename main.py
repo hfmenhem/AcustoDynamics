@@ -33,11 +33,22 @@ class Simulador:
         else:
             self.HaPlano = False
     
-    def setTransdutor(self, L, raio):
+    def setTransdutor(self, r0,n, raio, fase=np.array([0])):
         self.tipo=1
-        self.L = L
+        if np.shape(r0)[:3]!=(1,1,3):
+            r0=np.expand_dims(np.transpose(r0), (0,1))
+        if np.shape(n)[:3]!=(1,1,3):
+            n=np.expand_dims(np.transpose(n), (0,1))
+        if np.shape(raio)[:3]!=(1,1,1):
+            raio=np.expand_dims(raio, (0,1,2))
+        if np.shape(fase)[:3]!=(1,1,1):
+            fase=np.expand_dims(fase, (0,1,2))
+            
+        n = n/np.linalg.norm(n, axis=2, keepdims=True)
+        self.r0 = r0
+        self.n = n
         self.at = raio
-  
+        self.fase = fase
             
     
     def agua(Npar):
@@ -58,12 +69,19 @@ class Simulador:
         if self.tipo ==0:
             return (self.v0/self.k)*np.sin(self.k*(r[:,:, 2]-self.h))
         elif self.tipo==1:
-            self.at*self.v0*sc.jv(1,self.at*self.k*np.norm(r[:,:,(0,1)]))
             
- #            (E^(I k Sqrt[x^2 + y^2 + z^2])
- #  BesselJ[1, (a k Sqrt[x^2 + y^2])/Sqrt[x^2 + y^2 + z^2]])/(a k Sqrt[
- # x^2 + y^2])
-            pass
+            r = np.expand_dims(r, 3)
+            #a lista de r0's e n's está no eixo de número 3 (4º eixo)
+            rl = np.linalg.norm(r-self.r0, axis=2)
+            cos = np.einsum('ijkl,ijkl->ijl', self.n, r-self.r0)/rl
+            sen = np.sqrt(1-(cos**2))
+            phitl = self.v0*(self.at**2)*(np.e**(1j*(self.k*rl +self.fase)))/(rl*2)
+            teste=np.abs(phitl[0,:,0,0])
+            phitbessel = 2*sc.special.jv(1,self.at*self.k*sen)/(self.k*self.at*sen)
+
+            phit = phitl*np.where(sen==0, 1, phitbessel) #no limite theta ->0, phitbessel->1, porém não é definida nesse ponto         
+           
+            return np.sum(phit, axis=3)
     
     def GradPhiIn(self,r):
         if self.tipo ==0:

@@ -89,7 +89,7 @@ def plotgrafico(numerico, simulado, legenda):
 #f2 = 0.99825
 f1 = 0
 f2 = 1
-f = 10*(10**3) #[1/s]
+f = 40*(10**3) #[1/s]
 c = 343*(10**3) #[mm/s]
 k = 2*np.pi*f/c #[1/mm]
 Lamb = c/f
@@ -99,6 +99,7 @@ rho = 1.225*(10**(-6)) #g/mm^3
 #v0 = (np.sqrt(2)/10) * (10**3) # [mm/s] velocidade equivalente para uma energia de 10J
 #Vo = P0*k/omega*Rho
 v0 = (50*(10**3))*k/(2*np.pi*f*rho) #Pressão = 50*(10**3) Pa = 50*(10**3) g/mm*s^2
+v0 = 1e3 #1m/s
 
 
 h=0
@@ -109,13 +110,20 @@ m = np.zeros(np.shape(a)) # [g], densidade do ar vezes seu volume
 sim = Simulador(np.array([[f1]]), np.array([[f2]]),f, c, a, m,rho, v0, h, 0)
 L=100
 raio = 5
-sim.setTransdutor(L, raio)
-rs = np.array([[[0,0,0]]]) #Posições das partículas emissoreas
+
+r0 = np.array([[0,0,0]])
+n = np.array([[0,0,1]])
+raio = np.array([5])
+
+
+sim.setTransdutor(r0, n, raio)
+
 
 print(f'Z max = {Lamb} mm ')
 
-Yrange = [-5*raio, +5*Lamb]
-Zrange = [-0.95*L/2, 0.95*Lamb/2]
+Yrange = [-30, 30]
+Yrange = [0, 30]
+Zrange = [0, 200]
 
 ys, dy = np.linspace(*Yrange, 200,retstep=True)
 zs, dz = np.linspace(*Zrange, 400,retstep=True)
@@ -124,35 +132,51 @@ y = np.expand_dims([0,1,0]*np.expand_dims(ys, 1),1)
 
 rp = (z+y).reshape(-1,1,3) #Posições das partículas de prova
 
-MR = rp-rs
+
 Pin = sim.PhiIn(rp) #[mm^2/s]
-GPin = sim.GradPhiIn(rp)
-HPin = sim.HPhiIn(rp)
+# GPin = sim.GradPhiIn(rp)
+# HPin = sim.HPhiIn(rp)
 
 PinLoc = Pin.reshape(len(ys),len(zs))
 rploc = rp.reshape(len(ys),len(zs),3)
-GPinloc = GPin.reshape(len(ys),len(zs),3)
-HPinloc = HPin.reshape(len(ys),len(zs),3,3)
+# GPinloc = GPin.reshape(len(ys),len(zs),3)
+# HPinloc = HPin.reshape(len(ys),len(zs),3,3)
 
 
-gradNumPin = np.gradient(PinLoc, ys, zs)
-#HnumPscy =  np.gradient(gradNumPsc[0], ys, zs)
-#HnumPscz =  np.gradient(gradNumPsc[1], ys, zs)
-HnumPiny =  np.gradient(GPinloc[:,:,1], ys, zs)
-HnumPinz =  np.gradient(GPinloc[:,:,2], ys, zs)
+# gradNumPin = np.gradient(PinLoc, ys, zs)
+# #HnumPscy =  np.gradient(gradNumPsc[0], ys, zs)
+# #HnumPscz =  np.gradient(gradNumPsc[1], ys, zs)
+# HnumPiny =  np.gradient(GPinloc[:,:,1], ys, zs)
+# HnumPinz =  np.gradient(GPinloc[:,:,2], ys, zs)
 
-filtro = np.full(np.shape(PinLoc), True)
+#filtro = np.full(np.shape(PinLoc), True)
 
-
-
-plotgrafico(gradNumPin[0], GPinloc[:,:,1], 'd Psc / dy')
-plotgrafico(gradNumPin[1], GPinloc[:,:,2], 'd Psc / dz')
+Ploc = 1j*rho*k*c*PinLoc
+Filtro = np.abs(Ploc)<800
 
 
-plotgrafico(HnumPiny[0], HPinloc[:,:,1,1], 'd^2 Psc / dydy')
-plotgrafico(HnumPiny[1], HPinloc[:,:,1,2], 'd^2 Psc / dzdy')
-plotgrafico(HnumPinz[0], HPinloc[:,:,2,1], 'd^2 Psc / dydz')
-plotgrafico(HnumPinz[1], HPinloc[:,:,2,2], 'd^2 Psc / dzdz')
+fig, ax = plt.subplots(dpi=300, figsize=(10,10))
+ax.set_aspect(1)
+nan = np.full((len(ys), len(zs)), np.nan)
+pcm = ax.contourf(ys, zs, np.transpose(np.abs(np.where(Filtro,Ploc, nan))), levels=100)
+fig.colorbar(pcm, ax=ax)
+ax.set_title('$\phi$ do transdutor, valor absoluto')
+ax.set_xlabel('y [mm]')
+ax.set_ylabel('z [mm]')
+fig.show()
+
+
+fig, ax = plt.subplots(dpi=300, figsize=(10,10))
+plt.plot(zs, np.abs(np.where(Filtro,Ploc, nan))[0,:])
+plt.grid()
+# plotgrafico(gradNumPin[0], GPinloc[:,:,1], 'd Psc / dy')
+# plotgrafico(gradNumPin[1], GPinloc[:,:,2], 'd Psc / dz')
+
+
+# plotgrafico(HnumPiny[0], HPinloc[:,:,1,1], 'd^2 Psc / dydy')
+# plotgrafico(HnumPiny[1], HPinloc[:,:,1,2], 'd^2 Psc / dzdy')
+# plotgrafico(HnumPinz[0], HPinloc[:,:,2,1], 'd^2 Psc / dydz')
+# plotgrafico(HnumPinz[1], HPinloc[:,:,2,2], 'd^2 Psc / dzdz')
 
 
 
