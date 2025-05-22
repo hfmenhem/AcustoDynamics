@@ -66,27 +66,55 @@ class Simulador:
         return dicAr
     
     def PhiIn(self,r):
-        if self.tipo ==0:
+        if self.tipo == 0:
             return (self.v0/self.k)*np.sin(self.k*(r[:,:, 2]-self.h))
-        elif self.tipo==1:
+        elif self.tipo == 1:
             
             r = np.expand_dims(r, 3)
             #a lista de r0's e n's está no eixo de número 3 (4º eixo)
-            rl = np.linalg.norm(r-self.r0, axis=2)
-            cos = np.einsum('ijkl,ijkl->ijl', self.n, r-self.r0)/rl
+            rl = np.linalg.norm(r-self.r0, axis=2, keepdims=True)
+            cos = np.expand_dims(np.einsum('ijkl,ijkl->ijl', self.n, r-self.r0), 2)/rl
             sen = np.sqrt(1-(cos**2))
             phitl = self.v0*(self.at**2)*(np.e**(1j*(self.k*rl +self.fase)))/(rl*2)
-            teste=np.abs(phitl[0,:,0,0])
             phitbessel = 2*sc.special.jv(1,self.at*self.k*sen)/(self.k*self.at*sen)
 
             phit = phitl*np.where(sen==0, 1, phitbessel) #no limite theta ->0, phitbessel->1, porém não é definida nesse ponto         
            
-            return np.sum(phit, axis=3)
+            return np.sum(phit, axis=(2,3))
     
     def GradPhiIn(self,r):
-        if self.tipo ==0:
+        if self.tipo == 0:
             f = lambda a: [0,0, self.v0*np.cos(self.k*(a[2]-self.h))]
             return np.apply_along_axis(f, 2, r)
+        elif self.tipo == 1:
+            r = np.expand_dims(r, 3)
+            #a lista de r0's e n's está no eixo de número 3 (4º eixo)
+            rl = np.linalg.norm(r-self.r0, axis=2, keepdims=True)
+            cos =np.expand_dims(np.einsum('ijkl,ijkl->ijl', self.n, r-self.r0), 2) /rl
+            sen = np.sqrt(1-(cos**2))
+            
+            testecos = cos[:,0,0,0]
+            testen = self.n[0,0,:,:]
+            Gphitl = self.v0*(self.at**2)*(np.e**(1j*(self.k*rl +self.fase)))/(rl**2)
+            
+      
+            Gphitl1 = (((self.a*self.k)**2)*cos/(8*rl))*((cos*(r-self.r0))-(self.n*rl))
+            #Gphitl1=0
+            Gphitl2 = ((self.k/2)*((1/(self.k*rl))+1j))*(r-self.r0)
+            
+            Gphitbessel1 = 8*sc.special.jv(2,self.at*self.k*sen)/((self.k*self.at*sen)**2)
+            Gphitbessel2 = 2*sc.special.jv(1,self.at*self.k*sen)/(self.k*self.at*sen)
+            
+            teste1=Gphitbessel1[:,0,0,0]
+            teste2=Gphitbessel2[:,0,0,0]
+            
+            teste3 = Gphitl1[:,0,:,0]
+            teste4 = Gphitl2[:,0,:,0]
+
+            Gphit = Gphitl*np.where(np.tile(sen==0, (1,1,3,1)), Gphitl1+Gphitl2, (Gphitl1*Gphitbessel1)+(Gphitl2*Gphitbessel2)) #no limite theta ->0, Gphitbessel->1, porém não é definida nesse ponto         
+            
+            return np.sum(Gphit, axis=3)
+
         
     def HPhiIn(self,r):
         if self.tipo ==0:
