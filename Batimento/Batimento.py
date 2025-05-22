@@ -12,12 +12,14 @@ import matplotlib as mpl
 #propriedades: https://www.researchgate.net/figure/Density-and-sound-speed-values-Acrylonitrile-butadiene-styrene-ABS-polylactic-acid_tbl1_329699503
 
 Npar = 2
-# Npar = 1
+
+#Npar = 1
 
 dicMeio = Simulador.ar(Npar)
 a = np.array([[1], [1]]) #np.array(Npar*[[1.5/2]]) # [mm]
-# a = np.array([[1]]) #np.array(Npar*[[1.5/2]]) # [mm]
-rhoPol = (900*(10**-6)) #[g/mm^3]
+#a = np.array([[1]]) #np.array(Npar*[[1.5/2]]) # [mm]
+rhoPol = (900*(10**-6)) #[g/mm^3] #Material: PP
+
 cPol = 2740*(10**3) #[mm/s] 
 m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 
@@ -35,7 +37,9 @@ lamb = dicMeio["c"]/f
 print(f'lambda = {lamb:.2f} mm ')
 
 
-r0 = np.array([[[0,0,0-0.3]], [[0,0,(lamb) +0.3]]])
+
+r0 = np.array([[[0,0,-0.5]], [[0,0,(lamb)-0.5]]])
+
 v0 = np.array([[[0.0,0,0]], [[0.0,0,0]]])
 
 # r0 = np.array([[[0,0,-1]]])
@@ -44,8 +48,10 @@ v0 = np.array([[[0.0,0,0]], [[0.0,0,0]]])
 
 
 sim = Simulador(f1, f2, f, dicMeio['c'], a, m, dicMeio['rho'], v0max, h, dicMeio['dinvis'],e=0)
-dt = 0.00001
-tempo = 0.5
+
+dt = 1e-6
+tempo = 3
+
 
 rs, vs, t = sim.Simular(r0, v0, dt, tempo, g=g)
 Simulador.graficos(rs, vs, t, [], a)

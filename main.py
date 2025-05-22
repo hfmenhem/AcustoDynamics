@@ -4,6 +4,7 @@ import matplotlib.animation as animation
 import matplotlib as mpl
 import pickle 
 import scipy as sc
+from scipy.integrate import odeint
 
 class Simulador:
     
@@ -160,49 +161,46 @@ class Simulador:
             v=[np.inf]
         
         return min(v) #Retorna a menor raiz real maior ou igual a 0
-        
+    
     def Simular(self, r0, v0, dt, tempo, g=[0,0,0]):
-        frames = int(tempo/dt)
-        nPar = np.shape(v0)[0]
-        r = r0
-        v = v0
-
-        rs = np.empty((nPar, frames, 3))
-        vs = np.empty((nPar, frames, 3))
-
-        rs[:,0,:] = r0[:,0,:]
-        vs[:,0,:] = v0[:,0,:]
-
-        #Inicio do loop
-        for t in range(0, frames-1):
-            MR = r - np.transpose(r, (1,0,2))
-            Pin = self.PhiIn(r) #[mm^2/s]
-            GPin = self.GradPhiIn(r)
-            HPin = self.HPhiIn(r)
-            
-            Psc = self.PhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)) )
-            GPsc = self.GradPhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)))
-            HPsc = self.HPhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)))
-            
-            Pt  = np.sum(Psc , axis = 1,keepdims=True) + Pin
-            GPt = np.sum(GPsc, axis = 1,keepdims=True) + GPin
-            HPt = np.sum(HPsc, axis = 1,keepdims=True) + HPin
-            
-            Fac = self.FGorKov(Pt, GPt, HPt) #[uN]
-            
-            Far = -6*np.pi*self.dinvis*np.expand_dims(self.a, 2)*v
-            A =( (Fac+Far)/np.expand_dims(self.m, 2)) + np.expand_dims(g, (0,1))
-            
-            dr = v*dt + A*(dt**2)/2
-            dv = A*dt
-            
-            v = v+dv
-            r = r+dr
-            
-            rs[:,t+1,:] = r[:,0,:]
-            vs[:,t+1,:] = v[:,0,:]
+        nPar = np.shape(r0)[0]
         
-        return rs, vs, np.array(range(frames))*dt
+        ts = np.arange(0, tempo, dt)
+        
+        sol = odeint(self.SimAc, [*r0.flatten(), *v0.flatten()], ts, args=(g,))
+        rs = sol[:, :nPar*3].reshape((-1, nPar, 3))
+        vs = sol[:, nPar*3:].reshape((-1, nPar, 3))
+        
+        rs = np.transpose(rs, (1,0,2))
+        vs = np.transpose(vs, (1,0,2))
+
+        return rs, vs, ts
+    
+    def SimAc(self, y, t, g):
+        r=y[:int(len(y)/2)].reshape((-1,1,3))
+        v = y[int(len(y)/2):].reshape((-1,1,3))
+        
+        MR = r - np.transpose(r, (1,0,2))
+        Pin = self.PhiIn(r) #[mm^2/s]
+        GPin = self.GradPhiIn(r)
+        HPin = self.HPhiIn(r)
+        
+        Psc = self.PhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)) )
+        GPsc = self.GradPhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)))
+        HPsc = self.HPhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)))
+        
+        Pt  = np.sum(Psc , axis = 1,keepdims=True) + Pin
+        GPt = np.sum(GPsc, axis = 1,keepdims=True) + GPin
+        HPt = np.sum(HPsc, axis = 1,keepdims=True) + HPin
+        
+        Fac = self.FGorKov(Pt, GPt, HPt) #[uN]
+        
+        Far = -6*np.pi*self.dinvis*np.expand_dims(self.a, 2)*v
+        A =( (Fac+Far)/np.expand_dims(self.m, 2)) + np.expand_dims(g, (0,1))
+        
+        y = [*v.flatten(), *A.flatten()]
+        return y
+        
     
     def SimularComColisão(self, r0, v0, dt, tempo, g=[0,0,0]):
         frames = int(tempo/dt)
@@ -555,7 +553,7 @@ class Simulador:
         #x x t
         plt.figure(dpi=300)
         for i in range(Npar):
-            plt.plot(t, rs[i, :, 0], linestyle='', marker='.',markersize=2)
+            plt.plot(t, rs[i, :, 0], linestyle='-', marker='',markersize=2)
             plt.plot(TColsisoes, rColisao[i, :, 0], linestyle='', marker='.',markersize=2)
 
         plt.ylabel("x [mm]")
@@ -566,7 +564,7 @@ class Simulador:
         #z x t
         plt.figure(dpi=300)
         for i in range(Npar):
-            plt.plot(t, rs[i, :, 2], linestyle='', marker='.',markersize=2)
+            plt.plot(t, rs[i, :, 2], linestyle='-', marker='',markersize=2)
             plt.plot(TColsisoes, rColisao[i, :, 2], linestyle='', marker='.',markersize=2)
 
         plt.ylabel("z [mm]")
