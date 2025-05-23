@@ -98,9 +98,9 @@ class Simulador:
             Gphitl = self.v0*(self.at**2)*(np.e**(1j*(self.k*rl +self.fase)))/(rl**2)
             
       
-            Gphitl1 = (((self.a*self.k)**2)*cos/(8*rl))*((cos*(r-self.r0))-(self.n*rl))
+            Gphitl1 = (((self.at*self.k)**2)*cos/(8*rl))*((self.n*rl)-(cos*(r-self.r0)))
             #Gphitl1=0
-            Gphitl2 = ((self.k/2)*((1/(self.k*rl))+1j))*(r-self.r0)
+            Gphitl2 = ((self.k/2)*(1j-(1/(self.k*rl))))*(r-self.r0)
             
             Gphitbessel1 = 8*sc.special.jv(2,self.at*self.k*sen)/((self.k*self.at*sen)**2)
             Gphitbessel2 = 2*sc.special.jv(1,self.at*self.k*sen)/(self.k*self.at*sen)
