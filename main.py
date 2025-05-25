@@ -51,8 +51,38 @@ class Simulador:
         self.n = n
         self.at = raio
         self.fase = fase
-            
+        
+    def tinyLev(self, fase):
+        R = 60 #mm
+        rt = 5 #mm
+        rteff = 5.5 #distância entre transdutores
+        
+        nt =np.array([6,12,18])
+        theta = np.arcsin(nt*rteff/(np.pi*R))
+   
+        
+        phi = [ np.linspace(np.pi/i, (2+(1/i))*np.pi, i , endpoint=False) for i in nt]#cada conjunto de phi começa metade do step defasado
+        
+        coord = [(np.array([R, theta[i], 0]) + np.array([0,0, 1])*np.expand_dims(phii, 1)) for i, phii in enumerate(phi)   ]
+        coord = np.concatenate(coord)
+        
+        coordC =  np.transpose([coord[:, 0]*np.sin(coord[:,1])*np.cos(coord[:,2]), coord[:, 0]*np.sin(coord[:,1])*np.sin(coord[:,2]), coord[:, 0]*np.cos(coord[:,1])]) #mudança de coordenadas: sférica->cartesiana
+        coordC = np.concatenate((coordC, np.array([[1,1,-1]])*coordC)) #adicionando transdutores de baixo
+        
+        N = -1*coordC/np.linalg.norm(coordC, axis=1, keepdims=True)#como todos os transdutores estão em uma efera centrada na origem, suas normais são suas posições normalizadas (vezes -1)
     
+        fases = np.array(len(coord)*[0] + len(coord)*[fase]) #len(coord) = len(coordC)/2, visto que só tem os elementos de cima
+        
+        self.setTransdutor(coordC, N, len(coordC)*[rt], fases)
+        
+        #testar não há nenhum transdutor dentro do outro
+        # MR = np.expand_dims(coordC, 0) - np.expand_dims(coordC,1)
+        # MRl = np.linalg.norm(MR, axis=2)- (2*rt)
+        # MRl = MRl + np.triu(np.ones(np.shape(MR[:,:,0]))*np.inf) #Matriz triangular das distâncias entre partículas
+        # Mt = MRl<0
+        return coordC
+        
+        
     def agua(Npar):
         #unidades mm, s, g
         dicAgua = {'f1': np.array(Npar*[[0.623]]), 'f2':np.array(Npar*[[0.034]]), 'f': 10*(10**6), 'c':1480*(10**3), 'rho': 998*(10**(-6)), 'v0': (50*(10**3))/(998*(10**(-6))*1480*(10**3)), 'k':2*np.pi*(10*(10**6))/(1480*(10**3)), 'dimvis': 1.002}
@@ -124,8 +154,7 @@ class Simulador:
             cos =np.expand_dims(np.einsum('ijkl,ijkl->ijl', self.n, r-self.r0), (2,4)) /rl
             sen = np.sqrt(1-(cos**2))
             at = np.expand_dims(self.at, 4)
-            fase = np.expand_dims(self.fase, 4)
-            
+            fase = np.expand_dims(self.fase, 4)        
             
             NxRcos = (cos*np.expand_dims(self.n, 4)*rl)-((cos**2) *np.expand_dims(r-self.r0, 4))
             NxRcos2 = NxRcos*np.transpose(NxRcos, (0,1,4,3,2))

@@ -83,53 +83,22 @@ def plotgrafico(numerico, simulado, legenda):
     #plt.close()
 
 
+f=40e3 #Hz
+dicMeio = Simulador.ar(1)
+pressao = 800#Pa = g/mm*s^2
+#pressao = 2000#Pa = g/mm*s^2
 
-# f1 = 1
-# f2 = 1
-# f=10*(10**3)
-# c = 340 * (10**3) #mm/s
-# k= 2*np.pi*f/c
-# a = np.array([[.5]]) # [mm]
-# rho = 1.2 * (10**-6) #g/mm^3
-# v0 = 1e3 #mm/s
+a = np.array([[1]]) # [mm]
+rhoPol = (900*(10**-6)) #[g/mm^3] #Material: PP
+cPol = 2740*(10**3) #[mm/s] 
+m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 
-#rhoPol = (20*(10**-6))
-#cPol = 2350*(10**3) #[mm/s] 
-#f1 = 1- ((rhoar*(car**2))/ (rhoPol*(cPol**2)))
-#f2 = 2*((rhoPol-rhoar)/((2*rhoPol)+rhoar))
+f1 = 1- ((dicMeio['rho']*(dicMeio['c']**2))/ (rhoPol*(cPol**2)))
+f2 = 2*((rhoPol-dicMeio['rho'])/((2*rhoPol)+dicMeio['rho']))
 
-# #Dados de (SIMON et al., 2019) - ÁGUA
-# f1 = 0.623
-# f2 = 0.034
-# f = 10*(10**6) #[1/s]
-# c = 1480*(10**3) #[mm/s]
-# k = 2*np.pi*f/c #[1/mm]
-# a = np.array([[0.1*np.pi/k]]) # [mm]
-# #m = (a**3*(4*np.pi/3))*(1*10**3) # [g], massa, não importa
-# rho = 998*(10**(-6)) #g/mm^3
-# #v0 = (np.sqrt(2)/10) * (10**3) # [mm/s] velocidade equivalente para uma energia de 10J
-# #Vo = P0*k/omega*Rho
-# v0 = (50*(10**3))*k/(2*np.pi*f*rho) #Pressão = 50*(10**3) Pa = 50*(10**3) g/mm*s^2
+v0 = 1e3#mm/s
 
-
-
-
-#Dados de (SIMON et al., 2019) - AR (MODIFICADO)
-#f1 = 0.99998
-#f2 = 0.99825
-f1 = 0
-f2 = 1
-f = 40*(10**3) #[1/s]
-c = 343*(10**3) #[mm/s]
-k = 2*np.pi*f/c #[1/mm]
-Lamb = c/f
-a = np.array([[Lamb/20]]) # [mm]
-#m = (a**3*(4*np.pi/3))*(1*10**3) # [g], massa, não importa
-rho = 1.225*(10**(-6)) #g/mm^3
-#v0 = (np.sqrt(2)/10) * (10**3) # [mm/s] velocidade equivalente para uma energia de 10J
-#Vo = P0*k/omega*Rho
-v0 = (50*(10**3))*k/(2*np.pi*f*rho) #Pressão = 50*(10**3) Pa = 50*(10**3) g/mm*s^2
-v0 = 1e3 #1m/s
+Lamb=dicMeio["c"]/f
 
 
 h=0
@@ -137,14 +106,14 @@ h=Lamb/3
 
 m = np.zeros(np.shape(a)) # [g], densidade do ar vezes seu volume
 
-sim = Simulador(np.array([[f1]]), np.array([[f2]]),f, c, a, m,rho, v0, h, 0)
+sim = Simulador(np.array([[f1]]), np.array([[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], v0, h, 0)
 
 L = 100
 r0 = np.array([[0,0,0], [0,0, L]])
 n = np.array([[0,0,1], [0,0,-1]])
 raio = np.array([5,5])
 
-sim.setTransdutor(r0, n, raio)
+sim.setTransdutor(r0, n, raio, fase=[0, 0])
 
 
 print(f'Z max = {Lamb} mm ')
@@ -184,7 +153,7 @@ filtro = np.full(np.shape(PinLoc), True)
 filtro = np.linalg.norm(rploc, axis=2)>raio[0]
 
 nan = np.full((len(ys), len(zs)), np.nan)
-Ploc = 1j*rho*k*c*PinLoc
+Ploc = 1j*dicMeio["rho"]*(2*np.pi/Lamb)*dicMeio["c"]*PinLoc
 Filtro = np.abs(Ploc)<800
 
 
@@ -192,8 +161,8 @@ fig, ax = plt.subplots(dpi=300, figsize=(10,10))
 ax.set_aspect(1)
 
 pcm = ax.contourf(ys, zs, np.transpose(np.abs(np.where(Filtro,Ploc, nan))), levels=100)
-fig.colorbar(pcm, ax=ax)
-ax.set_title('$\phi$ do transdutor, valor absoluto')
+fig.colorbar(pcm, ax=ax, label = 'Pin, [Pa]')
+ax.set_title('pressão do transdutor, valor absoluto')
 ax.set_xlabel('y [mm]')
 ax.set_ylabel('z [mm]')
 fig.show()
@@ -215,7 +184,7 @@ plotgrafico(HnumPiny[1], HPinloc[:,:,1,2], 'd^2 Psc / dzdy')
 fig, ax = plt.subplots(dpi=300, figsize=(10,10))
 ax.set_aspect(1)
 pcm = ax.pcolormesh(ys, zs, np.transpose(np.linalg.norm(Floc, axis=2)))
-fig.colorbar(pcm, ax=ax,  label='|Fsc| [uN]')
+fig.colorbar(pcm, ax=ax,  label='|Fin| [uN]')
 ax.set_title(f'Módulo da força acústica primária')
 ax.set_xlabel('y [mm]')
 ax.set_ylabel('z [mm]')
