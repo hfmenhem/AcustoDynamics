@@ -38,8 +38,8 @@ plt.show()
 Yrange = [-20, 20]
 Zrange = [-40, 40]
 
-ys, dy = np.linspace(*Yrange, 100,retstep=True)
-zs, dz = np.linspace(*Zrange, 150,retstep=True)
+ys, dy = np.linspace(*Yrange, 150,retstep=True)
+zs, dz = np.linspace(*Zrange, 300,retstep=True)
 z = np.expand_dims([0,0,1]*np.expand_dims(zs, 1),0)
 y = np.expand_dims([0,1,0]*np.expand_dims(ys, 1),1)
 
@@ -61,9 +61,11 @@ Filtro = np.abs(Ploc)<1600
 fig, ax = plt.subplots(dpi=300, figsize=(10,10))
 ax.set_aspect(1)
 
-pcm = ax.pcolormesh(ys, zs, np.transpose(np.abs(Ploc)))
-fig.colorbar(pcm, ax=ax, label = 'Pin [Pa]')
-ax.set_title('pressão do transdutor, valor absoluto')
+pcm = ax.pcolormesh(ys, zs, np.transpose(np.abs(Ploc))/1e3)
+cbar = fig.colorbar(pcm, ax=ax, label = 'P [kPa]')
+cbar.set_ticks(ticks=[0,1,2,3,4])
+
+ax.set_title('Amplitude pressão do TinyLev (v = 1m/s)')
 ax.set_xlabel('y [mm]')
 ax.set_ylabel('z [mm]')
 plt.show()

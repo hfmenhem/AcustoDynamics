@@ -105,8 +105,13 @@ class Simulador:
             r = np.expand_dims(r, 3)
             #a lista de r0's e n's está no eixo de número 3 (4º eixo)
             rl = np.linalg.norm(r-self.r0, axis=2, keepdims=True)
+            teste=rl[0,0,0,:]
             cos = np.expand_dims(np.einsum('ijkl,ijkl->ijl', self.n, r-self.r0), 2)/rl
-            sen = np.sqrt(1-(cos**2))
+        
+            sen2 = 1-(cos**2)
+            sen2 = np.where(np.isclose(sen2, 0) , 0, sen2) # quando cos=1, o valor de sen2 é próximo de 0, porém por erro de precisão pode ser negativo ou positivo, o que dá porblema ao tirar a raiz quadrada. Por isso tem esse teste de proximidade com 0
+            sen = np.sqrt(sen2)
+   
             phitl = self.v0*(self.at**2)*(np.e**(1j*(self.k*rl +self.fase)))/(rl*2)
             phitbessel = 2*sc.special.jv(1,self.at*self.k*sen)/(self.k*self.at*sen)
 
@@ -123,8 +128,9 @@ class Simulador:
             #a lista de r0's e n's está no eixo de número 3 (4º eixo)
             rl = np.linalg.norm(r-self.r0, axis=2, keepdims=True)
             cos =np.expand_dims(np.einsum('ijkl,ijkl->ijl', self.n, r-self.r0), 2) /rl
-            sen = np.sqrt(1-(cos**2))
-
+            sen2 = 1-(cos**2)
+            sen2 = np.where(np.isclose(sen2, 0) , 0, sen2) # quando cos=1, o valor de sen2 é próximo de 0, porém por erro de precisão pode ser negativo ou positivo, o que dá porblema ao tirar a raiz quadrada. Por isso tem esse teste de proximidade com 0
+            sen = np.sqrt(sen2)
             Gphitl = self.v0*(self.at**2)*(np.e**(1j*(self.k*rl +self.fase)))/(rl**2)
             
       
@@ -152,7 +158,9 @@ class Simulador:
             I = np.transpose(np.expand_dims(np.identity(3, dtype=float), (0,1,2)), (0,1,3,2,4))
             rl = np.expand_dims(np.linalg.norm(r-self.r0, axis=2, keepdims=True), 4)
             cos =np.expand_dims(np.einsum('ijkl,ijkl->ijl', self.n, r-self.r0), (2,4)) /rl
-            sen = np.sqrt(1-(cos**2))
+            sen2 = 1-(cos**2)
+            sen2 = np.where(np.isclose(sen2, 0) , 0, sen2) # quando cos=1, o valor de sen2 é próximo de 0, porém por erro de precisão pode ser negativo ou positivo, o que dá porblema ao tirar a raiz quadrada. Por isso tem esse teste de proximidade com 0
+            sen = np.sqrt(sen2)
             at = np.expand_dims(self.at, 4)
             fase = np.expand_dims(self.fase, 4)        
             
@@ -278,7 +286,7 @@ class Simulador:
         return rs, vs, ts
     
     def SimAc(self, y, t, g):
-        r=y[:int(len(y)/2)].reshape((-1,1,3))
+        r = y[:int(len(y)/2)].reshape((-1,1,3))
         v = y[int(len(y)/2):].reshape((-1,1,3))
         
         MR = r - np.transpose(r, (1,0,2))
