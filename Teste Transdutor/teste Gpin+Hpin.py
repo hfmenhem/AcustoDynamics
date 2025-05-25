@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib as mpl
 
+import scipy as sc
+
 #Este código testa se o programa calcula corretamente o potencial de velocidade primário de um transdutor
 
 
@@ -16,12 +18,12 @@ def plotgrafico(numerico, simulado, legenda):
     nan = np.full((len(ys), len(zs)), np.nan)
     inf = np.full((len(ys), len(zs)), np.inf)
     zero = np.full((len(ys), len(zs)), 0)
-    
-    teste=np.max(np.abs([np.where(filtro, numerico, 0), np.where(filtro, simulado, 0)]))
-    
+   
     normR = mpl.colors.Normalize(vmin=np.min(np.real([np.where(filtro, numerico, inf), np.where(filtro, simulado, inf)])), vmax=np.max(np.real([np.where(filtro, numerico, -1*inf), np.where(filtro, simulado, -1*inf)])))
     normI = mpl.colors.Normalize(vmin=np.min(np.imag([np.where(filtro, numerico, inf), np.where(filtro, simulado, inf)])), vmax=np.max(np.imag([np.where(filtro, numerico, -1*inf), np.where(filtro, simulado, -1*inf)])))
     normA = mpl.colors.Normalize(vmin=np.min(np.abs([np.where(filtro, numerico, inf), np.where(filtro, simulado, inf)])), vmax=np.max(np.abs([np.where(filtro, numerico, zero), np.where(filtro, simulado, zero)])))
+ 
+    
     fig, ax = plt.subplots(dpi=300, figsize=(10,10))
     ax.set_aspect(1)
     
@@ -59,23 +61,24 @@ def plotgrafico(numerico, simulado, legenda):
     ax.set_ylabel('z [mm]')
     fig.show()
     
-    fig, ax = plt.subplots(dpi=300, figsize=(10,10))
-    ax.set_aspect(1)
-    pcm = ax.pcolormesh(ys, zs, np.transpose(np.abs(np.where(filtro, numerico, nan))), norm=normA)
-    fig.colorbar(pcm, ax=ax)
-    ax.set_title(f'{legenda} numérico, valor absoluto')
-    ax.set_xlabel('y [mm]')
-    ax.set_ylabel('z [mm]')
-    fig.show()
+    
+    # fig, ax = plt.subplots(dpi=300, figsize=(10,10))
+    # ax.set_aspect(1)
+    # pcm = ax.pcolormesh(ys, zs, np.transpose(np.abs(np.where(filtro, numerico, nan))), norm=normA)
+    # fig.colorbar(pcm, ax=ax)
+    # ax.set_title(f'{legenda} numérico, valor absoluto')
+    # ax.set_xlabel('y [mm]')
+    # ax.set_ylabel('z [mm]')
+    # fig.show()
    
-    fig, ax = plt.subplots(dpi=300, figsize=(10,10))
-    ax.set_aspect(1)
-    pcm = ax.pcolormesh(ys, zs, np.transpose(np.abs(np.where(filtro, simulado, nan))), norm=normA)
-    fig.colorbar(pcm, ax=ax)
-    ax.set_title(f'{legenda} simulado, valor absoluto')
-    ax.set_xlabel('y [mm]')
-    ax.set_ylabel('z [mm]')
-    fig.show()
+    # fig, ax = plt.subplots(dpi=300, figsize=(10,10))
+    # ax.set_aspect(1)
+    # pcm = ax.pcolormesh(ys, zs, np.transpose(np.abs(np.where(filtro, simulado, nan))), norm=normA)
+    # fig.colorbar(pcm, ax=ax)
+    # ax.set_title(f'{legenda} simulado, valor absoluto')
+    # ax.set_xlabel('y [mm]')
+    # ax.set_ylabel('z [mm]')
+    # fig.show()
 
     #plt.close()
 
@@ -135,21 +138,19 @@ h=Lamb/3
 m = np.zeros(np.shape(a)) # [g], densidade do ar vezes seu volume
 
 sim = Simulador(np.array([[f1]]), np.array([[f2]]),f, c, a, m,rho, v0, h, 0)
-L=100
-raio = 2.5
 
-r0 = np.array([[0,0,0]])
-n = np.array([[1,0,0]])
-raio = np.array([5])
-
+L = 100
+r0 = np.array([[0,0,0], [0,0, L]])
+n = np.array([[0,0,1], [0,0,-1]])
+raio = np.array([5,5])
 
 sim.setTransdutor(r0, n, raio)
 
 
 print(f'Z max = {Lamb} mm ')
 
-Yrange = [-10, 10]
-Zrange = [-10, 10]
+Yrange = [-20, 20]
+Zrange = [L/4, 3*L/4]
 
 ys, dy = np.linspace(*Yrange, 400,retstep=True)
 zs, dz = np.linspace(*Zrange, 400,retstep=True)
@@ -161,61 +162,66 @@ rp = (z+y).reshape(-1,1,3) #Posições das partículas de prova
 
 Pin = sim.PhiIn(rp) #[mm^2/s]
 GPin = sim.GradPhiIn(rp)
-# HPin = sim.HPhiIn(rp)
+HPin = sim.HPhiIn(rp)
+F = sim.FGorKov(Pin, GPin, HPin) #[uN]
+
 
 PinLoc = Pin.reshape(len(ys),len(zs))
 rploc = rp.reshape(len(ys),len(zs),3)
 GPinloc = GPin.reshape(len(ys),len(zs),3)
+Floc = F.reshape(len(ys),len(zs),3)
 
-# HPinloc = HPin.reshape(len(ys),len(zs),3,3)
+HPinloc = HPin.reshape(len(ys),len(zs),3,3)
 
-drPinloc  = np.linalg.norm(np.imag(GPinloc[:,:,:]), axis=2)
 
 gradNumPin = np.gradient(PinLoc, ys, zs)
-# #HnumPscy =  np.gradient(gradNumPsc[0], ys, zs)
-# #HnumPscz =  np.gradient(gradNumPsc[1], ys, zs)
-# HnumPiny =  np.gradient(GPinloc[:,:,1], ys, zs)
-# HnumPinz =  np.gradient(GPinloc[:,:,2], ys, zs)
+#HnumPscy =  np.gradient(gradNumPsc[0], ys, zs)
+#HnumPscz =  np.gradient(gradNumPsc[1], ys, zs)
+HnumPiny =  np.gradient(GPinloc[:,:,1], ys, zs)
+HnumPinz =  np.gradient(GPinloc[:,:,2], ys, zs)
 
 filtro = np.full(np.shape(PinLoc), True)
-filtro = np.linalg.norm(rploc, axis=2)>5
+filtro = np.linalg.norm(rploc, axis=2)>raio[0]
 
 nan = np.full((len(ys), len(zs)), np.nan)
 Ploc = 1j*rho*k*c*PinLoc
 Filtro = np.abs(Ploc)<800
 
 
-# fig, ax = plt.subplots(dpi=300, figsize=(10,10))
-# ax.set_aspect(1)
+fig, ax = plt.subplots(dpi=300, figsize=(10,10))
+ax.set_aspect(1)
 
-# pcm = ax.contourf(ys, zs, np.transpose(np.abs(np.where(Filtro,Ploc, nan))), levels=100)
-# fig.colorbar(pcm, ax=ax)
-# ax.set_title('$\phi$ do transdutor, valor absoluto')
-# ax.set_xlabel('y [mm]')
-# ax.set_ylabel('z [mm]')
-# fig.show()
+pcm = ax.contourf(ys, zs, np.transpose(np.abs(np.where(Filtro,Ploc, nan))), levels=100)
+fig.colorbar(pcm, ax=ax)
+ax.set_title('$\phi$ do transdutor, valor absoluto')
+ax.set_xlabel('y [mm]')
+ax.set_ylabel('z [mm]')
+fig.show()
 
 
 # fig, ax = plt.subplots(dpi=300, figsize=(10,10))
 # plt.plot(zs, np.abs(np.where(Filtro,Ploc, nan))[0,:])
 # plt.grid()
 
-plotgrafico(gradNumPin[0], GPinloc[:,:,1], 'd Psc / dy')
-plotgrafico(gradNumPin[1], GPinloc[:,:,2], 'd Psc / dz')
+# plotgrafico(gradNumPin[0], GPinloc[:,:,1], 'd Psc / dy')
+# plotgrafico(gradNumPin[1], GPinloc[:,:,2], 'd Psc / dz')
 
 
-# plotgrafico(HnumPiny[0], HPinloc[:,:,1,1], 'd^2 Psc / dydy')
-# plotgrafico(HnumPiny[1], HPinloc[:,:,1,2], 'd^2 Psc / dzdy')
-# plotgrafico(HnumPinz[0], HPinloc[:,:,2,1], 'd^2 Psc / dydz')
-# plotgrafico(HnumPinz[1], HPinloc[:,:,2,2], 'd^2 Psc / dzdz')
+#plotgrafico(HnumPiny[0], HPinloc[:,:,1,1], 'd^2 Psc / dydy')
+plotgrafico(HnumPiny[1], HPinloc[:,:,1,2], 'd^2 Psc / dzdy')
+#plotgrafico(HnumPinz[0], HPinloc[:,:,2,1], 'd^2 Psc / dydz')
+#plotgrafico(HnumPinz[1], HPinloc[:,:,2,2], 'd^2 Psc / dzdz')
 
-# fig, ax = plt.subplots(dpi=300, figsize=(10,10))
-# ax.set_aspect(1)
-# pcm = ax.pcolormesh(ys, zs, np.transpose((drPinloc)))
-# fig.colorbar(pcm, ax=ax)
-# #ax.set_title(f'{legenda} simulado, parte imaginária')
-# ax.set_xlabel('y [mm]')
-# ax.set_ylabel('z [mm]')
-# fig.show()
+fig, ax = plt.subplots(dpi=300, figsize=(10,10))
+ax.set_aspect(1)
+pcm = ax.pcolormesh(ys, zs, np.transpose(np.linalg.norm(Floc, axis=2)))
+fig.colorbar(pcm, ax=ax,  label='|Fsc| [uN]')
+ax.set_title(f'Módulo da força acústica primária')
+ax.set_xlabel('y [mm]')
+ax.set_ylabel('z [mm]')
+fig.show()
+
+plt.show()
+
 
 

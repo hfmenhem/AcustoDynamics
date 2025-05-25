@@ -157,6 +157,7 @@ plotgrafico(HnumPscy[1], HPscloc[:,:,1,2], 'd^2 Psc / dzdy')
 plotgrafico(HnumPscz[0], HPscloc[:,:,2,1], 'd^2 Psc / dydz')
 plotgrafico(HnumPscz[1], HPscloc[:,:,2,2], 'd^2 Psc / dzdz')
 
+plt.show()
 
 
 

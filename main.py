@@ -33,7 +33,9 @@ class Simulador:
         else:
             self.HaPlano = False
     
-    def setTransdutor(self, r0,n, raio, fase=np.array([0])):
+    def setTransdutor(self, r0,n, raio, fase=None):
+        if fase is None:
+            fase = np.array(len(raio)*[0])
         self.tipo=1
         if np.shape(r0)[:3]!=(1,1,3):
             r0=np.expand_dims(np.transpose(r0), (0,1))
@@ -92,24 +94,15 @@ class Simulador:
             rl = np.linalg.norm(r-self.r0, axis=2, keepdims=True)
             cos =np.expand_dims(np.einsum('ijkl,ijkl->ijl', self.n, r-self.r0), 2) /rl
             sen = np.sqrt(1-(cos**2))
-            
-            testecos = cos[:,0,0,0]
-            testen = self.n[0,0,:,:]
+
             Gphitl = self.v0*(self.at**2)*(np.e**(1j*(self.k*rl +self.fase)))/(rl**2)
             
       
             Gphitl1 = (((self.at*self.k)**2)*cos/(8*rl))*((self.n*rl)-(cos*(r-self.r0)))
-            #Gphitl1=0
             Gphitl2 = ((self.k/2)*(1j-(1/(self.k*rl))))*(r-self.r0)
             
             Gphitbessel1 = 8*sc.special.jv(2,self.at*self.k*sen)/((self.k*self.at*sen)**2)
             Gphitbessel2 = 2*sc.special.jv(1,self.at*self.k*sen)/(self.k*self.at*sen)
-            
-            teste1=Gphitbessel1[:,0,0,0]
-            teste2=Gphitbessel2[:,0,0,0]
-            
-            teste3 = Gphitl1[:,0,:,0]
-            teste4 = Gphitl2[:,0,:,0]
 
             Gphit = Gphitl*np.where(np.tile(sen==0, (1,1,3,1)), Gphitl1+Gphitl2, (Gphitl1*Gphitbessel1)+(Gphitl2*Gphitbessel2)) #no limite theta ->0, Gphitbessel->1, porém não é definida nesse ponto         
             
@@ -120,7 +113,40 @@ class Simulador:
         if self.tipo ==0:
             f =lambda a: [[0,0,0], [0,0,0], [0,0, -self.k*self.v0*np.sin(self.k*(a[2]-self.h)) ]]
             return np.apply_along_axis(f, 2, r)
-    
+        elif self.tipo ==1:
+            r = np.expand_dims(r, 3)
+            RxR = np.expand_dims(r-self.r0, 4)*np.transpose( np.expand_dims(r-self.r0, 4), (0,1,4,3,2))
+            NxN = np.expand_dims(self.n, 4)*np.transpose( np.expand_dims(self.n, 4), (0,1,4,3,2))
+            NxR = np.expand_dims(self.n, 4)*np.transpose( np.expand_dims(r-self.r0, 4), (0,1,4,3,2))
+            NxR2 = NxR+ np.transpose(NxR, (0,1,4,3,2))
+            I = np.transpose(np.expand_dims(np.identity(3, dtype=float), (0,1,2)), (0,1,3,2,4))
+            rl = np.expand_dims(np.linalg.norm(r-self.r0, axis=2, keepdims=True), 4)
+            cos =np.expand_dims(np.einsum('ijkl,ijkl->ijl', self.n, r-self.r0), (2,4)) /rl
+            sen = np.sqrt(1-(cos**2))
+            at = np.expand_dims(self.at, 4)
+            fase = np.expand_dims(self.fase, 4)
+            
+            
+            NxRcos = (cos*np.expand_dims(self.n, 4)*rl)-((cos**2) *np.expand_dims(r-self.r0, 4))
+            NxRcos2 = NxRcos*np.transpose(NxRcos, (0,1,4,3,2))
+            
+            Bessel1 = 2*sc.special.jv(1,at*self.k*sen)/(self.k*at*sen)
+            Bessel2 = 8*sc.special.jv(2,at*self.k*sen)/((self.k*at*sen)**2)
+            Bessel3 = 48*sc.special.jv(3,at*self.k*sen)/((self.k*at*sen)**3)
+            
+            coef0 = self.v0*(at**2)*(np.e**(1j*(self.k*rl +fase)))/(rl**3)
+            coef1 = self.k**2*RxR*(3/((self.k*rl)**2)-(3j/(self.k*rl))-1)/2   
+            coef2 = ((self.k*at)**2)*(NxN-(3*cos*(NxR2)/rl) + (1j*self.k*cos*NxR2) + (2*RxR*self.k*(cos**2)*((3/(self.k*rl))-1j)/rl))/8
+            coef3 = (((at*self.k)**4)/(rl**2))*NxRcos2/48
+                       
+            coef1I = self.k*(1j-(1/(self.k*rl)))*I*rl/2
+            coef2I = ((self.k*at)**2)*((-1*cos**2))*I/8
+            
+            Hphit = coef0*np.where(np.tile(sen==0, (1,1,3,1,3)), coef1+coef2+coef3+coef1I+coef2I, ((coef1+coef1I)*Bessel1)+((coef2+coef2I)*Bessel2)+(coef3*Bessel3)) #no limite theta ->0, Gphitbessel->1, porém não é definida nesse ponto         
+            
+            return np.sum(Hphit, axis=3)
+        
+        
     def PhiSc(self, R, pin, gpin):
         Rn = np.linalg.norm(R, axis= 2)
         coef1 = -np.transpose(self.f1*(self.a**3)*(self.k**2))/(3)

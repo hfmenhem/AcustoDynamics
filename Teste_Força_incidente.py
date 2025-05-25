@@ -21,7 +21,7 @@ rho = 1000*(10**(-6)) #g/mm^3
 v0 = (np.sqrt(2)/10) * (10**3) # [mm/s] velocidade equivalente para uma energia de 10J
 h=(np.pi/2)/k
 
-sim = Simulador(f1, f2, f, c, a, m, rho, v0, h)
+sim = Simulador(f1, f2, f, c, a, m, rho, v0, h,0)
 
 
 
@@ -45,6 +45,7 @@ plt.plot(r[:, 0, 2],k*Uteste(Pin[:, 0], GPin[:, 0, :]), linestyle='', marker='.'
 plt.plot((r[:-1, 0, 2]+r[1:, 0, 2])/2,FUteste, linestyle='', marker='.',markersize=2, label='F de U teste')
 
 plt.legend()
+plt.show()
 
 print(f'λ = {2*np.pi/k}')
 
