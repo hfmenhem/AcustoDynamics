@@ -27,7 +27,7 @@ sim = Simulador(np.array([[f1]]), np.array([[f2]]), f, dicMeio['c'], a, m, dicMe
 
 print(f'lambda = {Lamb:.2f} mm ')
 
-c = sim.tinyLev(np.pi)
+c = sim.tinyLev(0)
 
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
