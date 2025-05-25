@@ -1,0 +1,11 @@
+Amplitude de velocidade do transdutor 1.0000e+03 mm/s
+Partículas de PP no ar usando TinyLev
+nodos de pressão, se fossem ondas planas 
+r0 -2.1250 mm
+r1 2.1250 mm
+nodos de pressão, se fossem ondas planas 
+r0 -2.4611 mm
+r1 2.2334 mm
+pontos de equilíbrio, partículas simultâneas 
+r0 -2.4009 mm
+r1 2.1735 mm

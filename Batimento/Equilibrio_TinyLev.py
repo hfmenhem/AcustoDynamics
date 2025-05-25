@@ -23,11 +23,12 @@ Lamb=dicMeio["c"]/f
 print(f'lambda = {Lamb:.2f} mm ')
 
 sim = Simulador(np.array([[f1]]), np.array([[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], v0t, 0, 1e3*dicMeio['dinvis'])
-sim.tinyLev(np.pi)
+#sim.tinyLev(np.pi)
+sim.tinyLev(0)
 
 g=[0,0,-9.81e3]
 
-z0eq=[-Lamb/2, Lamb/2]
+z0eq=[-Lamb/4, Lamb/4]
 
 #Pontos de equilíbrio 1 partícula
 
@@ -93,7 +94,7 @@ arraysalva=[['Amplitude de velocidade do transdutor', f'{v0t:.4e} mm/s'],
              ['r0', f'{req01[0,2]:.4f} mm'],
              ['r1', f'{req01[1,2]:.4f} mm']]
 
-np.savetxt(f'pontosEquilibrio-{z0eq[0]*2/Lamb:.0f}-{z0eq[1]*2/Lamb:.0f}.txt', arraysalva, fmt='%s')
+np.savetxt(f'pontosEquilibrio;{z0eq[0]*2/Lamb:.1f};{z0eq[1]*2/Lamb:.1f}.txt', arraysalva, fmt='%s')
 
 # nodos de pressão, se fossem ondas planas
 # r0 = 0.00 mm

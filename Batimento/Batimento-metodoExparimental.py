@@ -17,10 +17,10 @@ cPol = 2740*(10**3) #[mm/s]
 m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 f1 = 1- ((dicMeio['rho']*(dicMeio['c']**2))/ (rhoPol*(cPol**2)))
 f2 = 2*((rhoPol-dicMeio['rho'])/((2*rhoPol)+dicMeio['rho']))
-v0t = 1e3 #m/s
+v0t = 1e3 #mm/s
 Lamb=dicMeio["c"]/f
 
-fase=0
+fase=np.pi
 
 print(f'lambda = {Lamb:.2f} mm ')
 
@@ -29,7 +29,7 @@ sim.tinyLev(fase)
 
 g=[0,0,-9.81e3]
 
-z0eq=[-Lamb/4, Lamb/4]
+z0eq=[-Lamb/2, Lamb/2]
 dtDesligado = 5e-3# s
 tsim = 1
 
@@ -87,7 +87,7 @@ arraysalva=[['Amplitude de velocidade do transdutor', f'{v0t:.4e} mm/s'],
               
               ]
 
-np.savetxt(f'pontosEquilibrio-{z0eq[0]*2/Lamb:.0f}-{z0eq[1]*2/Lamb:.0f}.txt', arraysalva, fmt='%s')
+np.savetxt(f'Batimento-queda {dtDesligado*1e3:.0f}-posicao{z0eq[0]*2/Lamb:.1f};{z0eq[1]*2/Lamb:.1f}.txt', arraysalva, fmt='%s')
 
 #x x t
 plt.figure(dpi=300)
