@@ -1,0 +1,12 @@
+Amplitude de velocidade do transdutor 1.0000e+03 mm/s
+deslocamento em z 0.3 mm
+Partículas de PP no ar usando TinyLev
+nodos de pressão, se fossem ondas planas 
+z0 0.0000 mm
+z1 4.2500 mm
+pontos de equilíbrio, partículas simultâneas 
+z0 -0.0561 mm
+z1 4.5157 mm
+pontos após descer 
+z0 -0.3561 mm
+z1 4.2157 mm
