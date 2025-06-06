@@ -9,4 +9,4 @@ z0 -2.4009 mm
 z1 2.1735 mm
 pontos após descer 
 z0 -3.4009 mm
-z1 1.1735 mm
+z1 1.6735 mm

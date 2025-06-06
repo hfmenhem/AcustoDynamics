@@ -31,7 +31,7 @@ g=[0,0,-9.81e3]
 
 z0eq=[-Lamb/4, Lamb/4]
 dz = 1
-tsim = 3
+tsim = 1
 
 #Achar ponto de quilíbrio em 2 partículas
 dt = 1e-6
@@ -47,7 +47,7 @@ while not np.all(np.isclose(vs[:,-1, :],0)): #Simula até que a velocidade seja 
     
 req = rs[:,-1,:] #pontos de equilíbrio
 
-r0 = rs[:,-1,:]+np.array([[0,0,-dz],[0,0,-dz]])
+r0 = rs[:,-1,:]+np.array([[0,0,-dz],[0,0,-dz/2]])
 #Religamento
 sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], v0t, 0, 0*dicMeio['dinvis'])
 sim.tinyLev(fase)
@@ -87,14 +87,14 @@ np.savetxt(f'Batimento-queda {dz:.0f}-posicao{z0eq[0]*2/Lamb:.1f};{z0eq[1]*2/Lam
 plt.figure(dpi=300)
 for i in range(Npar):
     plt.plot(t, rs[i, :, 2], linestyle='-', marker='',markersize=2)
-plt.plot(t, (rs[0, :, 2]+rs[1, :, 2])/2, linestyle='-', marker='',markersize=2)
+#plt.plot(t, (rs[0, :, 2]+rs[1, :, 2])/2, linestyle='-', marker='',markersize=2)
     
 plt.ylabel("z [mm]")
 plt.xlabel("t [s]")
 plt.title(f'Batimento - deslocamento em z {dz:.1f} mm \n Amplitude de velocidade do transdutor {v0t*1e-3:.1f} m/s')
 plt.grid()
 
-plt.savefig(f'Batimento-queda {dz:.0f}-posicao{z0eq[0]*2/Lamb:.1f};{z0eq[1]*2/Lamb:.1f}.png')
+#plt.savefig(f'Batimento-queda {dz:.0f}-posicao{z0eq[0]*2/Lamb:.1f};{z0eq[1]*2/Lamb:.1f}.png')
 plt.show()
 
 plt.figure(dpi=300)
@@ -106,9 +106,9 @@ plt.grid()
 plt.show()
 
 plt.figure(dpi=300)
-plt.plot( (rs[0, :, 2]+ rs[1, :, 2])/2, (rs[1, :, 2]- rs[0, :, 2])/2, linestyle='-', marker='',linewidth =0.5)
-plt.ylabel("z2 - z1/2 [mm]")
-plt.xlabel("z2 + z1/2[mm]")
+plt.plot( rs[0, :, 2],vs[0, :, 2], linestyle='-', marker='',linewidth =0.5)
+plt.ylabel("v1 [mm/s]")
+plt.xlabel("z1 [mm]")
 plt.title(f'Espaço de fase 2 - deslocamento em z {dz:.1f} mm \n Amplitude de velocidade do transdutor {v0t*1e-3:.1f} m/s')
 plt.grid()
 plt.show()
