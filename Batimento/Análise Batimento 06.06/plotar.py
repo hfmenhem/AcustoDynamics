@@ -42,7 +42,7 @@ fig2.subplots_adjust(hspace=0.05)  # adjust space between Axes
 yfs=[]
 xfs=[]
 flim=0
-Nsenos = 
+Nsenos = 4
 for i in range(Npar):
     N=len(rs[i, :, 2])
     w = blackman(N)
