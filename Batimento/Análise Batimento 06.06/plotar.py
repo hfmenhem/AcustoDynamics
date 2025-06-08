@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from scipy.fft import fft, fftfreq
 from scipy.interpolate import Akima1DInterpolator
-from scipy.signal import find_peaks
+import scipy.signal as sig
 from scipy.signal.windows import blackman
 from scipy.stats import gmean
 from scipy.optimize import curve_fit
@@ -26,9 +26,9 @@ def exp(t, a, b):
     return a*(np.e**b)
 
 
-rs = np.load('rs2.npy')
-vs = np.load('vs2.npy')
-t = np.load('t2.npy')
+rs = np.load('rs3.npy')
+vs = np.load('vs3.npy')
+t = np.load('t3.npy')
 
 Npar=len(rs[:,0,0])
 dt = t[1]-t[0]
@@ -42,7 +42,7 @@ fig2.subplots_adjust(hspace=0.05)  # adjust space between Axes
 yfs=[]
 xfs=[]
 flim=0
-Nsenos = 5
+Nsenos = 
 for i in range(Npar):
     N=len(rs[i, :, 2])
     w = blackman(N)
@@ -55,15 +55,29 @@ for i in range(Npar):
     xinter = np.linspace(np.min(xf),np.max(xf) , 20*N)
     yinter = bspl(xinter )
     
-    indpic = find_peaks(yinter)[0]
-    xfpic = xinter[indpic]
-    yfpic = yinter[indpic]
+    # indpic = find_peaks(yinter)[0]
+    # xfpic = xinter[indpic]
+    # yfpic = yinter[indpic]
     
 
+    # picos0 = sig.find_peaks(yf)[0]
+    # maiorPico = np.argmax(yf[picos0])
+    # width = (sig.peak_widths(yf, picos0))[maiorPico]
+
+
+    indpic = sig.find_peaks(yf, width=1)[0]
+    picosProeminentes=sig.peak_prominences(yf,indpic)[0]/yf[indpic] >0.3
     
-    # indpic = find_peaks(yf)[0]
     # xfpic = xf[indpic]
     # yfpic = yf[indpic]
+    
+    xfpic = (xf[indpic])[picosProeminentes]
+    yfpic = (yf[indpic])[picosProeminentes]
+    
+    limitefreq = xfpic>10
+    
+    xfpic = xfpic[limitefreq]
+    yfpic = yfpic[limitefreq]
     
     indy = np.argsort(yfpic)
     xfpic = np.flip(xfpic[indy])
@@ -90,7 +104,7 @@ for i in range(Npar):
     axs2[i].semilogy(xinter, yinter, '-')
     axs2[i].semilogy(xfpic, yfpic, '.')
     axs2[i].semilogy(xfpic[:Nsenos], yfpic[:Nsenos], '.')
-    #axs2[i].set_xlim(0,150)
+    #axs2[i].set_xlim(0,10)
     
     axs[i].plot(t,rs[i, :, 2]-senos(t, *popt), '.')
     

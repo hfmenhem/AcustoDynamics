@@ -36,9 +36,10 @@ z0eq=[0, Lamb/2]
 dzeq=[-1.5, 0.0]
 
 tsim = 1
+dt = 1e-3
 
 #=====================Achar ponto de quilíbrio em 2 partículas=====================
-dt = 1e-3
+
 tcar = m[0,0]/(dicMeio['dinvis']*1e3)#tempo característico devido à força de arrasto
 
 r0 = np.array([[[0.0,0,z0eq[0]]],[[0.0,0,z0eq[1]]]])
@@ -118,9 +119,9 @@ fig.supylabel("amplitude [mm]")
 fig.supxlabel("frequência [Hz]")
 fig.suptitle(f'Transformada de Fourier - deslocamento em z ({dzeq[0]:.1f},{dzeq[1]:.1f}) mm \n Amplitude de velocidade do transdutor {v0t*1e-3:.1f} m/s')
 
-np.save('rs2', rs)
-np.save('vs2', vs)
-np.save('t2', t)
+np.save('rs3', rs)
+np.save('vs3', vs)
+np.save('t3', t)
 
 plt.show()
 
