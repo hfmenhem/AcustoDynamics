@@ -39,8 +39,8 @@ def analise(nome):
     fasesfinal=[]
     
     Nsenos = 2
-    Nvezes=np.inf
-    e=1.5#ordem de magnitude da diferença do pico para sua base (log(pico)-log(base)>e)
+    Nvezes=5
+    e=0.5#ordem de magnitude da diferença do pico para sua base (log(pico)-log(base)>e)
     m = 2 #amplitude de ordem de grandeza
     
     for i in range(Npar):
@@ -127,7 +127,7 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Sim1-v2'
+    pasta='Sim2'
     dados =[]
     for x in os.listdir(pasta):
         if 'dado' in x:

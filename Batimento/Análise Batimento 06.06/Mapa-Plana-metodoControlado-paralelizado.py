@@ -7,6 +7,8 @@ from main import Simulador
 import numpy as np
 import pickle
 import concurrent.futures
+import time
+start_time = time.time()
 
 def operacao(nome,r0):
     rs, vsf, t = sim.Simular(r0, np.zeros(np.shape(r0)), dt, tsim, g=g)
@@ -35,7 +37,7 @@ h=0
 g=[0,0,-9.81e3]
 
 tsim = 1
-dt = 1e-3
+dt = 1e-4
 
 sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], v0t, h, 0*dicMeio['dinvis'])
 
@@ -49,9 +51,9 @@ if __name__ == '__main__':
     z0eq=[0, Lamb/2]
     #dzeq=[-.05, 0.0]
     ampdzeq=[-1.0, 1.0]
-    Npts = 10
+    Npts = 20
     
-    numeroSim='Sim1'
+    numeroSim='Sim2'
     dzs = np.linspace(ampdzeq[0], ampdzeq[1], Npts, endpoint=True)
     dzs=np.reshape(np.transpose(np.meshgrid(dzs, dzs), (1,2,0)), (-1, 2))
     
@@ -128,6 +130,8 @@ if __name__ == '__main__':
     
     for r in result:
         print(r)
+        
+    print(f'O código demorou {(time.time() - start_time)/60:.1f} min')
     
 
 
