@@ -3,7 +3,7 @@ import matplotlib as mpl
 import pickle
 import numpy as np
 
-pasta='Sim3'
+pasta='Sim2'
 #pasta='Sim4'
 Nharm = 2
 
