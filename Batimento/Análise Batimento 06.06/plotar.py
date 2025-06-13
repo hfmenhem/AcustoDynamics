@@ -3,8 +3,8 @@ import matplotlib as mpl
 import pickle
 import numpy as np
 
-pasta='Sim1-v2'
-pasta='Sim2'
+pasta='Sim3'
+#pasta='Sim4'
 Nharm = 2
 
 with open(f'{pasta}\\resultado-final', 'rb') as dbfile:
@@ -23,8 +23,16 @@ for f, a in zip(freqs, amps):
     teste=np.take_along_axis(a, arg, axis=1)
     teste=teste[:,-2:]
     
-    freqN.append(np.take_along_axis(f, arg, axis=1)[:,-2:])
-    ampsN.append(np.take_along_axis(a, arg, axis=1)[:,-2:])
+    f = np.take_along_axis(f, arg, axis=1)
+    a = np.take_along_axis(a, arg, axis=1)
+    
+    if np.shape(f)[1]<2:
+        nan = (2-np.shape(f)[1])*[[np.nan], [np.nan]]
+        f = np.concatenate((f,nan), axis=1)
+        a = np.concatenate((a,nan), axis=1)
+    
+    freqN.append(f[:,-2:])
+    ampsN.append(a[:,-2:])
 
 freqN=np.array(freqN)
 ampsN=np.array(ampsN)
@@ -52,6 +60,11 @@ ampsN = np.take_along_axis(ampsN, np.expand_dims(arg2, (2,3)), axis=1)
 fbat = np.abs(freqN[:,:,:,0]-freqN[:,:,:,1])
 ambbat = np.abs(np.min((np.abs(ampsN[:,:,:,0]),np.abs(ampsN[:,:,:,1])), axis=0))
 
+filtroA = ambbat<1
+filtroF = fbat<10
+
+ambbatF = np.where(filtroA, ambbat, np.full(np.shape(ambbat), np.nan))
+fbatF = np.where(filtroF, fbat, np.full(np.shape(fbat), np.nan))
 
 
 def plot(var0, var1, titulo):
@@ -69,16 +82,16 @@ def plot(var0, var1, titulo):
 
     plt.show()
 
-plot(ambbat[:,:,0], ambbat[:,:,1], 'Amplitude de batimento')
-plot(fbat[:,:,0], fbat[:,:,1], 'Frequencia de batimento')
+plot(ambbatF[:,:,0], ambbatF[:,:,1], 'Amplitude de batimento')
+plot(fbatF[:,:,0], fbatF[:,:,1], 'Frequencia de batimento')
 
-n0 = np.where(np.any(freqN[:,:,0,:]==np.nan, axis=2),1, 0)
-n1 = np.where(np.any(freqN[:,:,1,:]==np.nan, axis=2),1, 0)
-plot(n0,n1, 'Frequencia nan')
+# n0 = np.where(np.any(freqN[:,:,0,:]==np.nan, axis=2),1, 0)
+# n1 = np.where(np.any(freqN[:,:,1,:]==np.nan, axis=2),1, 0)
+# plot(n0,n1, 'Frequencia nan')
 
-n0 = np.where(np.any(ampsN[:,:,0,:]==np.nan, axis=2),1, 0)
-n1 = np.where(np.any(ampsN[:,:,1,:]==np.nan, axis=2),1, 0)
-plot(n0,n1, 'Amplitude nan')
+# n0 = np.where(np.any(ampsN[:,:,0,:]==np.nan, axis=2),1, 0)
+# n1 = np.where(np.any(ampsN[:,:,1,:]==np.nan, axis=2),1, 0)
+# plot(n0,n1, 'Amplitude nan')
 
 
 

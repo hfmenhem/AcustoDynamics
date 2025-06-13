@@ -31,6 +31,7 @@ m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 f1 = 1- ((dicMeio['rho']*(dicMeio['c']**2))/ (rhoPol*(cPol**2)))
 f2 = 2*((rhoPol-dicMeio['rho'])/((2*rhoPol)+dicMeio['rho']))
 v0t = 10e3 #mm/s
+
 Lamb=dicMeio["c"]/f
 
 h=0
@@ -51,9 +52,9 @@ if __name__ == '__main__':
     z0eq=[0, Lamb/2]
     #dzeq=[-.05, 0.0]
     ampdzeq=[-1.0, 1.0]
-    Npts = 20
+    Npts = 100
     
-    numeroSim='Sim2'
+    numeroSim='Sim3'
     dzs = np.linspace(ampdzeq[0], ampdzeq[1], Npts, endpoint=True)
     dzs=np.reshape(np.transpose(np.meshgrid(dzs, dzs), (1,2,0)), (-1, 2))
     

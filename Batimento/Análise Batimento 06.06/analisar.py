@@ -68,31 +68,37 @@ def analise(nome):
             xfpic = np.flip(xfpic[indy])
             yfpic = np.flip(yfpic[indy])
             
-            #Ajuste
-            if(len(yfpic)<Nsenos):
-                p0=[np.mean(dados), *yfpic, *xfpic, *np.zeros(len(yfpic))]
-                popt, pcov = curve_fit(senos, t, dados, p0)
-            else:
-                p0=[np.mean(dados), *yfpic[:Nsenos], *(xfpic[:Nsenos]), *np.zeros(Nsenos)]
-                popt, pcov = curve_fit(senos, t, dados, p0)
             
-            #Guardando dados da regressão
-            if len(popts)>0:
-                meds = popts[0]
-            else:
-                meds=0
-            npopts=len(popts[1:])//3
-            amps =popts[1:npopts+1]
-            freqs = popts[npopts+1:2*npopts+1]
-            fases = popts[2*npopts+1:3*npopts+1]
+            try:
+                #Ajuste
+                if(len(yfpic)<Nsenos):
+                    p0=[np.mean(dados), *yfpic, *xfpic, *np.zeros(len(yfpic))]
+                    popt, pcov = curve_fit(senos, t, dados, p0)
+                else:
+                    p0=[np.mean(dados), *yfpic[:Nsenos], *(xfpic[:Nsenos]), *np.zeros(Nsenos)]
+                    popt, pcov = curve_fit(senos, t, dados, p0)
+                    
+                #Guardando dados da regressão
+                if len(popts)>0:
+                    meds = popts[0]
+                else:
+                    meds=0
+                npopts=len(popts[1:])//3
+                amps =popts[1:npopts+1]
+                freqs = popts[npopts+1:2*npopts+1]
+                fases = popts[2*npopts+1:3*npopts+1]
+                
+                med = popt[0]
+                npopt=len(popt[1:])//3
+                amp =popt[1:npopt+1]
+                freq = popt[npopt+1:2*npopt+1]
+                fase = popt[2*npopt+1:3*npopt+1]
+                
+                popts=[(meds+med), *amps,*amp, *freqs, *freq, *fases, *fase]
+            except:
+                break
             
-            med = popt[0]
-            npopt=len(popt[1:])//3
-            amp =popt[1:npopt+1]
-            freq = popt[npopt+1:2*npopt+1]
-            fase = popt[2*npopt+1:3*npopt+1]
             
-            popts=[(meds+med), *amps,*amp, *freqs, *freq, *fases, *fase]
       
             #Recalculando resíduos
             dados = dados-senos(t, *popt)
@@ -113,7 +119,7 @@ def analise(nome):
             
             j+=1
 
-        print(f'razão desvio padrão / menor amplitude utilizada: {np.std(rs[i, :, 2]-senos(t, *popt))/abs(popt[Nsenos])}')
+        #print(f'razão desvio padrão / menor amplitude utilizada: {np.std(rs[i, :, 2]-senos(t, *popt))/abs(popt[Nsenos])}')
 
         npopts=len(popts[1:])//3
         ampsfinal.append(popts[1:npopts+1])
@@ -127,7 +133,7 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Sim2'
+    pasta='Sim4-v2'
     dados =[]
     for x in os.listdir(pasta):
         if 'dado' in x:
@@ -139,6 +145,8 @@ if __name__ == '__main__':
     amps=[]
     freqs=[]
     fases=[]
+    
+
     for r in result:
         #Iguala o número de elementos dos arrays de cada esfera
         dif = len(r['amp'][0])-len(r['amp'][1])
@@ -157,6 +165,8 @@ if __name__ == '__main__':
         amps.append(np.array(r['amp']))
         freqs.append(np.array(r['freq']))
         fases.append(np.array(r['fase']))
+        
+        
     
     resultadoFinal ={'r0': r0s, 'freq': freqs, 'amp': amps, 'fase': fases}
     

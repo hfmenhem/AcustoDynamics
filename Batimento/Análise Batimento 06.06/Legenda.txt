@@ -1,0 +1,4 @@
+Sim2 	- 20x20 	onda plana
+Sim3 	- 100x100 	onda plana
+Sim4 	- 3x3 		TinyLev
+Sim4-v2 - 100x100 	TinyLev
