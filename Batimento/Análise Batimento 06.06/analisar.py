@@ -3,15 +3,14 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 parent_dir = os.path.abspath(os.path.join(parent_dir, ".."))
 sys.path.append(parent_dir) #Para poder importar o main, que está em uma pasta anterior
 
-from main import Simulador
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 from scipy.fft import fft, fftfreq
 import scipy.signal as sig
 from scipy.optimize import curve_fit
 import pickle
 import concurrent.futures
+import time
+start_time = time.time()
 
 def senos(t, med, *kwarg):
     t = np.expand_dims(t, 0)
@@ -38,10 +37,10 @@ def analise(nome):
     freqsfinal=[]
     fasesfinal=[]
     
-    Nsenos = 2
-    Nvezes=5
+    Nsenos = 1
+    Nvezes=6
     e=0.5#ordem de magnitude da diferença do pico para sua base (log(pico)-log(base)>e)
-    m = 2 #amplitude de ordem de grandeza
+    m = 3 #amplitude de ordem de grandeza
     
     for i in range(Npar):
         N=len(rs[i, :, 2])
@@ -59,7 +58,7 @@ def analise(nome):
     
         xfpic = (xf[indpic])[picosProeminentes]
         yfpic = (yf[indpic])[picosProeminentes]
-        
+
         popts=[]
         j=1
         while(len(yfpic)>0 and j<=Nvezes):
@@ -67,7 +66,6 @@ def analise(nome):
             indy = np.argsort(yfpic)
             xfpic = np.flip(xfpic[indy])
             yfpic = np.flip(yfpic[indy])
-            
             
             try:
                 #Ajuste
@@ -97,9 +95,7 @@ def analise(nome):
                 popts=[(meds+med), *amps,*amp, *freqs, *freq, *fases, *fase]
             except:
                 break
-            
-            
-      
+
             #Recalculando resíduos
             dados = dados-senos(t, *popt)
             
@@ -113,27 +109,41 @@ def analise(nome):
             xfpic = (xf[indpic])[picosProeminentes]
             yfpic = (yf[indpic])[picosProeminentes]
             
+            
             limiteamp = yfpic>(np.max(np.abs([*amp, *amps]))*(10**(-m)))
             xfpic = xfpic[limiteamp]
             yfpic = yfpic[limiteamp]
             
             j+=1
-
-        #print(f'razão desvio padrão / menor amplitude utilizada: {np.std(rs[i, :, 2]-senos(t, *popt))/abs(popt[Nsenos])}')
-
+            
+        #útima regressão para acomodar todos os parâmetros
+        try:
+            popts, pcov = curve_fit(senos, t, rs[i, :, 2], popts)
+            
+            npopts=len(popts[1:])//3
+    
+            freqs = popts[npopts+1:2*npopts+1]
+            
+            repetidos=np.tril(np.isclose(np.expand_dims(freqs,0), np.expand_dims(freqs,1), atol=5e-3), k=-1)
+            if np.any(repetidos):
+                argrep = np.where(repetidos)[0]
+                
+                popts=np.delete(popts,[ *(argrep+1), *argrep+npopts+1, *(argrep+2*npopts+1)])
+                popts, pcov = curve_fit(senos, t, rs[i, :, 2], popts)
+        except:
+            pass
         npopts=len(popts[1:])//3
         ampsfinal.append(popts[1:npopts+1])
         freqsfinal.append(popts[npopts+1:2*npopts+1])
         fasesfinal.append(popts[2*npopts+1:3*npopts+1])
-    
+
     resultado = {'r0': r0, 'freq': freqsfinal, 'amp': ampsfinal, 'fase': fasesfinal}
     return resultado
 
 
-
 if __name__ == '__main__':
     
-    pasta='Sim4-v2'
+    pasta='Sim2'
     dados =[]
     for x in os.listdir(pasta):
         if 'dado' in x:
@@ -173,6 +183,8 @@ if __name__ == '__main__':
     with open(f'{pasta}\\resultado-final', 'wb') as dbfile:
         pickle.dump(resultadoFinal, dbfile)
         dbfile.close()
+        
+    print(f'O código demorou {(time.time() - start_time)/60:.1f} min')
     
     
 

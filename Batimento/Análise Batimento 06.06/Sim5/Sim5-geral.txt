@@ -1,0 +1,23 @@
+Partículas de PP no ar usando onda plana sem arrasto
+Amplitude de velocidade da onda plana 1.0000e+04 mm/s
+f 4.0000e+04 Hz
+c 3.4000e+05 Hz
+rho 1.2900e-06 Hz
+a, todas iguais 1.0000e+00 mm
+m, todas iguais 3.7699e-03 mm
+rhoPP 9.0000e-04 g/mm^3
+cPP 2.7400e+06 mm/s
+f1 9.9998e-01 mm
+f2 9.9785e-01 mm
+Nodos de pressão das ondas planas 
+z0 0.0000e+00 mm
+z1 4.2500e+00 mm
+pontos de equilíbrio, partículas simultâneas 
+z0 -5.4392e-02 mm
+z1 4.1055e+00 mm
+amplitude de amostragem 
+Delta zmin -1.0000e+00 mm
+Delta zmax 1.0000e+00 mm
+número de pontos por lado 20
+tempo de simulação 1.0000e+01 s
+discretização de simulação 1.0000e-04 s

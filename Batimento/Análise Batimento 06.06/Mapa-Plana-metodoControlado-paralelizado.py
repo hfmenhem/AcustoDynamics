@@ -37,7 +37,7 @@ Lamb=dicMeio["c"]/f
 h=0
 g=[0,0,-9.81e3]
 
-tsim = 1
+tsim = 10
 dt = 1e-4
 
 sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], v0t, h, 0*dicMeio['dinvis'])
@@ -52,9 +52,9 @@ if __name__ == '__main__':
     z0eq=[0, Lamb/2]
     #dzeq=[-.05, 0.0]
     ampdzeq=[-1.0, 1.0]
-    Npts = 100
+    Npts = 20
     
-    numeroSim='Sim3'
+    numeroSim='Sim5'
     dzs = np.linspace(ampdzeq[0], ampdzeq[1], Npts, endpoint=True)
     dzs=np.reshape(np.transpose(np.meshgrid(dzs, dzs), (1,2,0)), (-1, 2))
     
