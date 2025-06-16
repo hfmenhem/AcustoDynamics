@@ -74,7 +74,7 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Sim6'
+    pasta='Sim6-v2'
     dados =[]
     for x in os.listdir(pasta):
         if 'dado' in x:
