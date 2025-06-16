@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import pickle
 import numpy as np
+import matplotlib.ticker as ticker
 
 pasta='Sim6-v2'
 #pasta='Sim4'
@@ -20,7 +21,7 @@ zs = np.reshape(zs, [N,N, 2])
 arg2 = np.argsort(zs[:,:,1], axis=1)
 zs = np.take_along_axis(zs, np.expand_dims(arg2, 2), axis=1)
 
-def plot(var0, var1, titulo, subt = None):
+def plot(var0, var1, titulo, subt = None, label='', tipo = 1):
 
     fig, ax = plt.subplots(1,2,dpi=300)
     fig.suptitle(titulo)
@@ -30,6 +31,7 @@ def plot(var0, var1, titulo, subt = None):
     else:
         ax[0].set_title(subt[0])
         ax[1].set_title(subt[1])
+        
     ax[0].set_aspect(1)
     ax[1].set_aspect(1)
     
@@ -39,8 +41,41 @@ def plot(var0, var1, titulo, subt = None):
     
     psm0 = ax[0].pcolor(zs[:,:,0],zs[:,:,1], var0,shading='nearest', norm=norm)
     psm1 = ax[1].pcolor(zs[:,:,0],zs[:,:,1], var1,shading='nearest', norm=norm)
-    fig.colorbar(psm0, ax=ax[0])
-    fig.colorbar(psm1, ax=ax[1])
+
+    
+    for i in range(2):
+        if tipo == 1:
+            ax[i].xaxis.set_major_locator(ticker.LinearLocator(3))
+            ax[i].xaxis.set_minor_locator(ticker.LinearLocator(31))
+            ax[i].yaxis.set_major_locator(ticker.LinearLocator(3))
+            ax[i].yaxis.set_minor_locator(ticker.LinearLocator(31))
+            
+            ax[i].tick_params(axis="x", labelrotation=0)
+            ax[i].set_xlabel('$z_o$ - partícula 0 [mm]')
+        elif tipo == 2:
+            ax[i].xaxis.set_major_locator(ticker.LinearLocator(2))
+            ax[i].xaxis.set_minor_locator(ticker.LinearLocator(11))
+            ax[i].yaxis.set_major_locator(ticker.LinearLocator(3))
+            ax[i].yaxis.set_minor_locator(ticker.LinearLocator(31))
+            
+            ax[i].tick_params(axis="x", labelrotation=-10)
+            ax[i].set_xlabel('$z_o$ - partícula 0 [mm]')
+            
+    
+    if tipo == 1:
+        ax[0].set_ylabel('$z_o$ - partícula 1 [mm]')
+        ax[1].tick_params(axis="y", which = 'both', labelleft=False, right=True)
+        ax[0].tick_params(axis="y", which = 'both', right=True)
+        fig.colorbar(psm1, ax=ax, location='bottom', pad=0.21, label=label)
+    elif tipo == 2:
+        ax[0].set_ylabel('$z_o$ - partícula 1 [mm]')
+        ax[1].tick_params(axis="y", which = 'both', labelleft=False, right=True)
+        ax[0].tick_params(axis="y", which = 'both', right=True)
+        fig.colorbar(psm1, ax=ax, location='right', label=label)
+    
+    
+    
+    
 
     plt.show()
     
@@ -71,14 +106,18 @@ sAmins = np.array(dados['sAmin'])
        
 
 f = organiza(1/Pbats)
+filtro = f<1e3
+f = np.where(filtro, f, np.full(np.shape(f), np.nan))
+
 Amaxs = organiza(Amaxs)
 Amins = organiza(Amins)
 ampB = Amaxs-Amins
 
 
+tipos = {'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim6-v2': "Onda plana - recorte"}
 
-plot(f[:,:,0], f[:,:,1], 'Frequencia de batimento')
-plot(ampB[:,:,0], ampB[:,:,1], 'Amplitude de batimento')
-plot(Amaxs[:,:,0], Amaxs[:,:,1], 'Amplitude máxima')
-plot(Amins[:,:,0], Amins[:,:,1], 'Amplitude mínima')
+plot(f[:,:,0], f[:,:,1], tipos[pasta], label='Frequencia de batimento [Hz]', tipo = 2)
+plot(ampB[:,:,0], ampB[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 2)
+plot(Amaxs[:,:,0], Amaxs[:,:,1], tipos[pasta], label = 'Amplitude máxima [mm]', tipo = 2)
+plot(Amins[:,:,0], Amins[:,:,1], tipos[pasta], label = 'Amplitude mínima [mm]', tipo = 2)
 
