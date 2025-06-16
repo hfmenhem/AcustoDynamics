@@ -104,14 +104,14 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Sim3'
-    nome = 'Sim3'
+    pasta='Sim6'
+    nome = 'Sim6'
     #dados = 114 # 18
     #dados = 140 # 47
     #dados = 0 # 0
     #dados = 210 #Exemplo de pequenas oscilações
     
-    dados = 3505 # entender
+    dados = 19 # entender
     #dados = 3506 # 
     
     caminho = f'{pasta}\\{nome}-dado-{dados}'

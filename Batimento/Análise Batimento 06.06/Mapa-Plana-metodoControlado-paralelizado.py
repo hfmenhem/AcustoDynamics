@@ -37,7 +37,7 @@ Lamb=dicMeio["c"]/f
 h=0
 g=[0,0,-9.81e3]
 
-tsim = 10
+tsim = 1
 dt = 1e-4
 
 sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], v0t, h, 0*dicMeio['dinvis'])
@@ -51,12 +51,14 @@ if __name__ == '__main__':
 
     z0eq=[0, Lamb/2]
     #dzeq=[-.05, 0.0]
-    ampdzeq=[-1.0, 1.0]
-    Npts = 20
+    ampdzeq0=[-0.2, 0.0] # amplitude em relação ao ponto de equilíbrio da partícula 0
+    ampdzeq1=[0.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 1
+    Npts = 100
     
-    numeroSim='Sim5'
-    dzs = np.linspace(ampdzeq[0], ampdzeq[1], Npts, endpoint=True)
-    dzs=np.reshape(np.transpose(np.meshgrid(dzs, dzs), (1,2,0)), (-1, 2))
+    numeroSim='Sim6'
+    dzs0 = np.linspace(ampdzeq0[0], ampdzeq0[1], Npts, endpoint=True)
+    dzs1 = np.linspace(ampdzeq1[0], ampdzeq1[1], Npts, endpoint=True)
+    dzs=np.reshape(np.transpose(np.meshgrid(dzs0, dzs1), (1,2,0)), (-1, 2))
     
     
     #=====================Achar ponto de quilíbrio em 2 partículas=====================
@@ -110,8 +112,10 @@ if __name__ == '__main__':
                   ['z0', f'{req[0,2]:.4e} mm'],
                   ['z1', f'{req[1,2]:.4e} mm'],
                   ['amplitude de amostragem', ''],
-                  ['Delta zmin', f'{ampdzeq[0]:.4e} mm'],
-                  ['Delta zmax', f'{ampdzeq[1]:.4e} mm'],
+                  ['Delta zmin0', f'{ampdzeq0[0]:.4e} mm'],
+                  ['Delta zmax0', f'{ampdzeq0[1]:.4e} mm'],
+                  ['Delta zmin1', f'{ampdzeq1[0]:.4e} mm'],
+                  ['Delta zmax1', f'{ampdzeq1[1]:.4e} mm'],
                   ['número de pontos por lado', f'{Npts}'],
                   ['tempo de simulação', f'{tsim:.4e} s'],
                   ['discretização de simulação', f'{dt:.4e} s'],

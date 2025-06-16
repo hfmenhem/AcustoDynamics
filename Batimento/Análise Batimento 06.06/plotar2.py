@@ -3,7 +3,7 @@ import matplotlib as mpl
 import pickle
 import numpy as np
 
-pasta='Sim3'
+pasta='Sim6'
 #pasta='Sim4'
 Nharm = 2
 
@@ -71,13 +71,14 @@ sAmins = np.array(dados['sAmin'])
        
 
 f = organiza(1/Pbats)
-ampB = organiza(Amaxs-Amins)
+Amaxs = organiza(Amaxs)
+Amins = organiza(Amins)
+ampB = Amaxs-Amins
 
-filtro = np.logical_and(f>3.55, f<3.65)
-ff = np.where(filtro, f, np.full(np.shape(filtro), np.nan))
+
 
 plot(f[:,:,0], f[:,:,1], 'Frequencia de batimento')
 plot(ampB[:,:,0], ampB[:,:,1], 'Amplitude de batimento')
-plot(ff[:,:,0], ff[:,:,1], 'Frequencia de batimento - errado')
+plot(Amaxs[:,:,0], Amaxs[:,:,1], 'Amplitude máxima')
+plot(Amins[:,:,0], Amins[:,:,1], 'Amplitude mínima')
 
-print(zs[filtro[:,:,0], :])
