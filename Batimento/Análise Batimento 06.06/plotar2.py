@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 import matplotlib.ticker as ticker
 
-pasta='Sim6-v2'
+pasta='Sim8'
 #pasta='Sim4'
 Nharm = 2
 
@@ -13,7 +13,13 @@ with open(f'{pasta}\\resultado-final2', 'rb') as dbfile:
     dbfile.close()
 
 r0s = np.array(dados['r0'])
-zs = r0s[:,:,2]
+
+if  len(np.shape(r0s))==2:
+    zs = r0s
+else:
+    zs = r0s[:,:,2]
+
+
 arg = np.argsort(zs[:,0])
 zs = zs[arg, :]
 N = int(np.sqrt(len(zs)))
@@ -81,7 +87,12 @@ def plot(var0, var1, titulo, subt = None, label='', tipo = 1):
     
 #Organizando os dados
 def organiza(arr):
-    zs = r0s[:,:,2]
+    
+    if  len(np.shape(r0s))==2:
+        zs = r0s
+    else:
+        zs = r0s[:,:,2]
+
     arg = np.argsort(zs[:,0])
     zs = zs[arg, :]
     arr = arr[arg,:]
@@ -114,10 +125,10 @@ Amins = organiza(Amins)
 ampB = Amaxs-Amins
 
 
-tipos = {'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim6-v2': "Onda plana - recorte"}
+tipos = {'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim6-v2': "Onda plana - recorte", 'Sim7': "Onda plana - Teste mapa força - recorte", 'Sim8': "Onda plana - Teste mapa força"} 
 
-plot(f[:,:,0], f[:,:,1], tipos[pasta], label='Frequencia de batimento [Hz]', tipo = 2)
-plot(ampB[:,:,0], ampB[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 2)
-plot(Amaxs[:,:,0], Amaxs[:,:,1], tipos[pasta], label = 'Amplitude máxima [mm]', tipo = 2)
-plot(Amins[:,:,0], Amins[:,:,1], tipos[pasta], label = 'Amplitude mínima [mm]', tipo = 2)
+plot(f[:,:,0], f[:,:,1], tipos[pasta], label='Frequencia de batimento [Hz]', tipo = 1)
+plot(ampB[:,:,0], ampB[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 1)
+plot(Amaxs[:,:,0], Amaxs[:,:,1], tipos[pasta], label = 'Amplitude máxima [mm]', tipo = 1)
+plot(Amins[:,:,0], Amins[:,:,1], tipos[pasta], label = 'Amplitude mínima [mm]', tipo = 1)
 

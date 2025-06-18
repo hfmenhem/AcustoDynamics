@@ -4,3 +4,5 @@ Sim4 	- 3x3 		TinyLev		1s
 Sim4-v2 - 100x100 	TinyLev		1s
 Sim5 	- 20x20 	onda plana	10s
 Sim6 	- 20x20 	onda plana	1s região de interesse dz0=[-0.2, 0.0]; dz1=[0.0, 1.0] 
+Sim7	- mapa de força	onda plana	1s região de interesse dz0=[-0.2, 0.0]; dz1=[0.0, 1.0] 
+Sim8	- mapa de força	onda plana	1s

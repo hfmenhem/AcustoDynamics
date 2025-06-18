@@ -22,6 +22,12 @@ def analise(nome):
     rs = dado['rs']
     r0 = dado['r0']
     
+    apenasz = len(np.shape(rs))==2 #booleano indicando se temos apenas as componentes em Z (True) ou se temos todas as 3 componentes(False) 
+    if not apenasz:
+        r0 = r0[:,2]
+        rs = rs[:, :, 2]
+
+
     Npar = 2
     
     Pbat=[]
@@ -33,7 +39,7 @@ def analise(nome):
     Amin = []
     sAmin = []
     for i in range(Npar):
-        intbasico = make_interp_spline(t, rs[i, :, 2])
+        intbasico = make_interp_spline(t, rs[i, :])
         tl=np.linspace(0, t[-1], 100*len(t))
         rsinterpolado = intbasico(tl)
         
@@ -74,7 +80,7 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Sim4-v2'
+    pasta='Sim8'
     dados =[]
     for x in os.listdir(pasta):
         if 'dado' in x:

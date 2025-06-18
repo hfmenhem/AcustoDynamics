@@ -24,8 +24,14 @@ def analise(nome):
     rs = dado['rs']
     r0 = dado['r0']
     
-    print(r0[:,2])
-    
+    apenasz = len(np.shape(rs))==2 #booleano indicando se temos apenas as componentes em Z (True) ou se temos todas as 3 componentes(False) 
+    if not apenasz:
+        r0 = r0[:,2]
+        rs = rs[:, :, 2]
+
+    print(r0[:])
+
+
     Npar = 2
     
     Pbat=[]
@@ -37,7 +43,7 @@ def analise(nome):
     Amin = []
     sAmin = []
     for i in range(Npar):
-        intbasico = make_interp_spline(t, rs[i, :, 2])
+        intbasico = make_interp_spline(t, rs[i, :])
         tl=np.linspace(0, t[-1], 100*len(t))
         rsinterpolado = intbasico(tl)
         
@@ -47,7 +53,7 @@ def analise(nome):
         plt.figure(dpi=300)
         plt.title(f'sinal-{i}')
         plt.plot(tl, intbasico(tl), '-')
-        plt.plot(t, rs[i, :, 2], '.')
+        plt.plot(t, rs[i, :], '.')
         plt.plot(tl[indpicM], rsinterpolado[indpicM], '.')
         
         intf = make_interp_spline(tl[indpicM], rsinterpolado[indpicM])
@@ -104,14 +110,15 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Sim6'
-    nome = 'Sim6'
+    pasta='Sim7'
+    nome = 'Sim7'
     #dados = 114 # 18
     #dados = 140 # 47
     #dados = 0 # 0
     #dados = 210 #Exemplo de pequenas oscilações
     
     dados = 19 # entender
+    dados = 40 # entender
     #dados = 3506 # 
     
     caminho = f'{pasta}\\{nome}-dado-{dados}'
