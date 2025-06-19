@@ -10,7 +10,7 @@ from scipy.interpolate import RectBivariateSpline
 import pickle
 
 #nome = 'estacionaria'
-numeroSim='Sim7'
+numeroSim='Sim9'
 
 f=40e3 #Hz
 dicMeio = Simulador.ar(1)
@@ -23,13 +23,16 @@ m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 f1 = 1- ((dicMeio['rho']*(dicMeio['c']**2))/ (rhoPol*(cPol**2)))
 f2 = 2*((rhoPol-dicMeio['rho'])/((2*rhoPol)+dicMeio['rho']))
 
-v0t = 10e3 #mm/s
+#v0t = 10e3 #mm/s
+v0t = 1e3 #mm/s
 
 Lamb=dicMeio["c"]/f
 
 h=0
 
 sim = Simulador(np.array([[f1]]), np.array([[f2]]), f, dicMeio['c'], a, m, dicMeio['rho'], v0t, h, 0)
+fase= np.pi
+sim.tinyLev(fase)
 
 print(f'lambda = {Lamb:.2f} mm ')
 
@@ -108,10 +111,36 @@ else:
         
 
 os.mkdir(diretorio)
+# arraysalvaValores=[
+#               #['deslocamento em z', f'{dz:.1f} mm'],
+#               ['Partículas de PP no ar', 'usando onda plana sem arrasto'],
+#               ['Amplitude de velocidade da onda plana', f'{v0t:.4e} mm/s'],
+#               ['f', f'{f:.4e} Hz'],
+#               ['c', f'{dicMeio["c"]:.4e} Hz'],
+#               ['rho', f'{dicMeio["rho"]:.4e} Hz'],
+#               ['a, todas iguais', f'{a[0,0]:.4e} mm'],
+#               ['m, todas iguais', f'{m[0,0]:.4e} mm'],
+#               ['rhoPP', f'{rhoPol:.4e} g/mm^3'],
+#               ['cPP', f'{cPol:.4e} mm/s'],
+#               ['f1', f'{f1:.4e} mm'],
+#               ['f2', f'{f2:.4e} mm'],
+#               ['Nodos de pressão das ondas planas', ''],
+#               ['z0', f'{0:.4e} mm'],
+#               ['z1', f'{Lamb/2:.4e} mm'],
+#               ['amplitude de amostragem', ''],
+#               ['zmin0', f'{zrange0[0]:.4e} mm'],
+#               ['zmax0', f'{zrange0[1]:.4e} mm'],
+#               ['zmin1', f'{zrange1[0]:.4e} mm'],
+#               ['zmax1', f'{zrange1[1]:.4e} mm'],
+#               ['discretização da amostragem', ''],
+#               ['dz0', f'{dz0:.4e} mm'],
+#               ['dz1', f'{dz1:.4e} mm'],
+#               ]
+
 arraysalvaValores=[
               #['deslocamento em z', f'{dz:.1f} mm'],
-              ['Partículas de PP no ar', 'usando onda plana sem arrasto'],
-              ['Amplitude de velocidade da onda plana', f'{v0t:.4e} mm/s'],
+              ['Partículas de PP no ar', 'usando TiniLev sem arrasto'],
+              ['Amplitude de velocidade do transdutor', f'{v0t:.4e} mm/s'],
               ['f', f'{f:.4e} Hz'],
               ['c', f'{dicMeio["c"]:.4e} Hz'],
               ['rho', f'{dicMeio["rho"]:.4e} Hz'],

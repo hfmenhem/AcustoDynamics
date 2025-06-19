@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 import matplotlib.ticker as ticker
 
-pasta='Sim8'
+pasta='Sim9'
 #pasta='Sim4'
 Nharm = 2
 
@@ -47,8 +47,6 @@ def plot(var0, var1, titulo, subt = None, label='', tipo = 1):
     
     psm0 = ax[0].pcolormesh(zs[:,:,0],zs[:,:,1], var0,shading='nearest', norm=norm)
     psm1 = ax[1].pcolormesh(zs[:,:,0],zs[:,:,1], var1,shading='nearest', norm=norm)
-
-    ax[0].plot(-0.1, 4.6)
     
     for i in range(2):
         if tipo == 1:
@@ -129,11 +127,10 @@ ampBf = np.where(filtro, ampB, np.full(np.shape(ampB), np.nan))
 
 print(np.transpose((zs[:,:,0][filtro[:,:,0]], zs[:,:,1][filtro[:,:,0]])))
 
-tipos = {'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim6-v2': "Onda plana - recorte", 'Sim7': "Onda plana - Teste mapa força - recorte", 'Sim8': "Onda plana - Teste mapa força"} 
-
+tipos = {'Sim2':'Onda plana', 'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim5': 'Onda plana -10s','Sim6-v2': "Onda plana - recorte", 'Sim7': "Onda plana - mapa força - recorte", 'Sim8': "Onda plana - mapa força", 'Sim9': "TinyLev - mapa força",} 
 
 plot(ampB[:,:,0], ampB[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 1)
-plot(ampBf[:,:,0], ampBf[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 1)
+#plot(ampBf[:,:,0], ampBf[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 1)
 
 plot(f[:,:,0], f[:,:,1], tipos[pasta], label='Frequencia de batimento [Hz]', tipo = 1)
 # plot(ampB[:,:,0], ampB[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 2)
