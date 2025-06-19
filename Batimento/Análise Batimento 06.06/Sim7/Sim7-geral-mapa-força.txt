@@ -6,6 +6,6 @@ Delta zmin0 -2.0000e-01 mm
 Delta zmax0 0.0000e+00 mm
 Delta zmin1 0.0000e+00 mm
 Delta zmax1 1.0000e+00 mm
-número de pontos por lado 20
+número de pontos por lado 100
 tempo de simulação 1.0000e+00 s
 discretização de simulação 1.0000e-04 s

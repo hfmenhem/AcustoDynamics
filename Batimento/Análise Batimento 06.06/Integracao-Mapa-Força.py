@@ -66,8 +66,8 @@ g=-9.81e3
 tsim = 1
 dt = 1e-4
     
-numeroSim='Sim8'
-diretorio ='Sim8'
+numeroSim='Sim7'
+diretorio ='Sim7'
 
 
     
@@ -83,8 +83,8 @@ if __name__ == '__main__':
 
     z0eq=[0, Lamb/2]
     #dzeq=[-.05, 0.0]
-    ampdzeq0=[-1.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 0
-    ampdzeq1=[-1.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 1
+    ampdzeq0=[-0.2, 0.0] # amplitude em relação ao ponto de equilíbrio da partícula 0
+    ampdzeq1=[0.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 1
     Npts = 100
 
     dzs0 = np.linspace(ampdzeq0[0], ampdzeq0[1], Npts, endpoint=True)

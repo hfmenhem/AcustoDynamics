@@ -57,12 +57,13 @@ def analise(nome):
         plt.plot(tl[indpicM], rsinterpolado[indpicM], '.')
         
         intf = make_interp_spline(tl[indpicM], rsinterpolado[indpicM])
-        plt.plot(t, intf(t), '-')
+        tint = t[np.logical_and(t<tl[indpicM][-2], t>tl[indpicM][1])]#Os valores analisados para saber se há pico são aqueles que estão entre pontos reais que não são os da borda. Ou seja, não serão considerados válidos picos entre o primeiro e segundo valores usados na interpolação, nem entre os últimos dois, pois nesses intervalos po=dem haver efeitos da interpolação que gerariam falsos picos
+        plt.plot(tint, intf(tint), '-')
         
-        indpicMM = sig.find_peaks(intf(t))[0]
-        indpicMm = sig.find_peaks(-1*intf(t))[0]
-        plt.plot(t[indpicMM], intf(t[indpicMM]), '.')
-        plt.plot(t[indpicMm], intf(t[indpicMm]), '.')
+        indpicMM = sig.find_peaks(intf(tint))[0]
+        indpicMm = sig.find_peaks(-1*intf(tint))[0]
+        plt.plot(tint[indpicMM], intf(tint[indpicMM]), '.')
+        plt.plot(tint[indpicMm], intf(tint[indpicMm]), '.')
         # if i==0:
         #     plt.ylim((0.79, 0.794))
         # else:
@@ -72,26 +73,26 @@ def analise(nome):
         d=np.diff(tl[indpicM])
         Posc.append(np.mean(d))
         sPosc.append(np.std(d)/np.sqrt(len(d)))
-        if len(indpicMM)>1:
-            d=np.diff(t[indpicMM])
-            Pbat.append(np.mean(d))
-            sPbat.append(np.std(d)/np.sqrt(len(d)))
-        elif len(indpicMm)>1:
-            d=np.diff(t[indpicMm])
+        
+        if max(len(indpicMM), len(indpicMm))>1:
+            if len(indpicMM)>=len(indpicMm):
+                d=np.diff(tint[indpicMM])
+            else:
+                d=np.diff(tint[indpicMm])
             Pbat.append(np.mean(d))
             sPbat.append(np.std(d)/np.sqrt(len(d)))
         elif len(indpicMm) == 1 and len(indpicMM) == 1:
-            Pbat.append(2*np.abs(t[indpicMm]-t[indpicMM])[0])
+            Pbat.append(2*np.abs(tint[indpicMm]-tint[indpicMM])[0])
             sPbat.append(np.nan)
         else:
             Pbat.append(np.nan)
             sPbat.append(np.nan)
         
-        Amax.append(np.mean(intf(t[indpicMM])))
-        sAmax.append(np.std(intf(t[indpicMM]))/len(indpicMM))
+        Amax.append(np.mean(intf(tint[indpicMM])))
+        sAmax.append(np.std(intf(tint[indpicMM]))/len(indpicMM))
         
-        Amin.append(np.mean(intf(t[indpicMm])))
-        sAmin.append(np.std(intf(t[indpicMm]))/len(indpicMm))
+        Amin.append(np.mean(intf(tint[indpicMm])))
+        sAmin.append(np.std(intf(tint[indpicMm]))/len(indpicMm))
         
         print(Amax[i])
         print(Amin[i])
@@ -110,15 +111,17 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Sim7'
-    nome = 'Sim7'
+    pasta='Sim8'
+    nome = 'Sim8'
     #dados = 114 # 18
     #dados = 140 # 47
     #dados = 0 # 0
     #dados = 210 #Exemplo de pequenas oscilações
     
-    dados = 19 # entender
-    dados = 40 # entender
+    dados = 500 # Caso interessante
+    dd = 0 
+    dados +=dd
+    
     #dados = 3506 # 
     
     caminho = f'{pasta}\\{nome}-dado-{dados}'
