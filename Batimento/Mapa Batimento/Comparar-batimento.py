@@ -87,7 +87,7 @@ def organiza(arr):
     arr = np.take_along_axis(arr, np.expand_dims(arg2, 2), axis=1)
     return arr
 
-tipos = {'Sim2':'Onda plana', 'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim5': 'Onda plana -10s','Sim6-v2': "Onda plana - recorte", 'Sim7': "Onda plana - mapa força - recorte", 'Sim8': "Onda plana - mapa força", 'Sim9': "TinyLev - mapa força",} 
+tipos = {'Sim2':'Onda plana', 'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim5': 'Onda plana -10s','Sim6-v2': "Onda plana - recorte", 'Sim7': "Onda plana - mapa força - recorte", 'Sim8': "Onda plana - usando mapa de forças", 'Sim9': "TinyLev - usando mapa de forças",} 
 
 f=40e3 #Hz
 dicMeio = Simulador.ar(1)
@@ -102,8 +102,8 @@ g=-9.81e3
 
 h=0
 
-numeroSim='Sim8'
-diretorio ='Sim8'
+numeroSim='Sim9'
+diretorio ='Sim9'
 
 with open(f'{diretorio}\\força', 'rb') as dbfile:
     dado = pickle.load(dbfile)

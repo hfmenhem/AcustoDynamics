@@ -52,6 +52,8 @@ def analise(nome):
         
         plt.figure(dpi=300)
         plt.title(f'sinal-{i}')
+        plt.xlabel('tempo [s]')
+        plt.ylabel('z [mm]')
         plt.plot(tl, intbasico(tl), '-')
         plt.plot(t, rs[i, :], '.')
         plt.plot(tl[indpicM], rsinterpolado[indpicM], '.')
@@ -111,15 +113,15 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Sim8'
-    nome = 'Sim8'
+    pasta='Sim11'
+    nome = 'Sim11'
     #dados = 114 # 18
     #dados = 140 # 47
     #dados = 0 # 0
     #dados = 210 #Exemplo de pequenas oscilações
     
-    dados = 500 # Caso interessante
-    dd = 0 
+    dados = 0 # Caso interessante
+    dd = 87 
     dados +=dd
     
     #dados = 3506 # 

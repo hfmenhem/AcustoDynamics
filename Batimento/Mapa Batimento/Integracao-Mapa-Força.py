@@ -63,11 +63,11 @@ m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 
 g=-9.81e3
 
-tsim = 1
+tsim = 10
 dt = 1e-4
     
-numeroSim='Sim9'
-diretorio ='Sim9'
+numeroSim='Sim11'
+diretorio ='Sim11'
 
 
     
@@ -85,12 +85,28 @@ if __name__ == '__main__':
     #dzeq=[-.05, 0.0]
     # ampdzeq0=[-0.2, 0.0] # amplitude em relação ao ponto de equilíbrio da partícula 0
     # ampdzeq1=[0.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 1
-    ampdzeq0=[-1.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 0
-    ampdzeq1=[-1.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 1
-    Npts = 100
+    # ampdzeq0=[-1.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 0
+    # ampdzeq1=[-1.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 1
+    ampdzeq0=[-1.5, -0.7] # amplitude em relação ao ponto de equilíbrio da partícula 0
+    ampdzeq1=[-1.2, 0.2] # amplitude em relação ao ponto de equilíbrio da partícula 1
+    
+    ampdzeq0=[ -1.2, -0.8] # amplitude em relação ao ponto de equilíbrio da partícula 0
+    ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
+    
+    Npts = 200
 
-    dzs0 = np.linspace(ampdzeq0[0], ampdzeq0[1], Npts, endpoint=True)
-    dzs1 = np.linspace(ampdzeq1[0], ampdzeq1[1], Npts, endpoint=True)
+    if type(ampdzeq0) is float or type(ampdzeq0) is int:
+        dzs0 = np.array(ampdzeq0)
+        dzs1 = np.linspace(ampdzeq1[0], ampdzeq1[1], Npts, endpoint=True)
+        ampdzeq0=[ampdzeq0,ampdzeq0]
+    elif type(ampdzeq1) is float or type(ampdzeq1) is int:
+        dzs0 = np.linspace(ampdzeq0[0], ampdzeq0[1], Npts, endpoint=True)
+        dzs1 = np.array(ampdzeq1)
+        ampdzeq1=[ampdzeq1,ampdzeq1]
+    else:
+        dzs1 = np.linspace(ampdzeq1[0], ampdzeq1[1], Npts, endpoint=True)
+        dzs0 = np.linspace(ampdzeq0[0], ampdzeq0[1], Npts, endpoint=True)
+    dzs=np.reshape(np.transpose(np.meshgrid(dzs0, dzs1), (1,2,0)), (-1, 2))
     dzs=np.reshape(np.transpose(np.meshgrid(dzs0, dzs1), (1,2,0)), (-1, 2))
     
     
