@@ -1,0 +1,11 @@
+pontos de equilíbrio, partículas simultâneas 
+z0 -5.4392e-02 mm
+z1 4.1055e+00 mm
+posição simulada 
+z0 -1.1000e+00 mm
+z0 -1.0000e+00 mm
+tempo de simulação 1.0000e+02 s
+discretização de simulação 1.0000e-04 s
+discretização de salvamento 1.0000e-03 s
+rtol 1.4901e-11 s
+atol 1.4901e-11 s

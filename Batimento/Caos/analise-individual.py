@@ -116,7 +116,7 @@ def analise(nome):
 if __name__ == '__main__':
     
     #pasta='SimT-v2'
-    pasta='SimF'
+    pasta='Sim-Longo-1'
     #dados = 114 # 18
     #dados = 140 # 47
     #dados = 0 # 0
