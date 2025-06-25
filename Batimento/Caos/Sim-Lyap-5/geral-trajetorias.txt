@@ -1,0 +1,15 @@
+pontos de equilíbrio, partículas simultâneas 
+z0 -5.4392e-02 mm
+z1 4.1055e+00 mm
+amplitude de amostragem 
+Delta zmin0 -1.1000e+00 mm
+Delta zmax0 -1.1000e+00 mm
+Delta zmin1 -1.0000e+00 mm
+Delta zmax1 -1.0000e+00 mm
+número de pontos na partícula 0 2
+número de pontos na partícula 1 1
+tempo de simulação 5.0000e+00 s
+discretização de simulação 1.0000e-05 s
+discretização de salvamento 1.0000e-03 s
+rtol 1.4901e-11 s
+atol 1.4901e-11 s
