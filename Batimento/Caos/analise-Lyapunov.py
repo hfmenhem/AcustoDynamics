@@ -43,6 +43,7 @@ def analise(nome):
     sAmax = []
     Amin = []
     sAmin = []
+    envelopes=[]
     for i in range(Npar):
         intbasico = make_interp_spline(t, rs[i, :])
         tl=np.linspace(0, t[-1], 100*len(t))
@@ -98,7 +99,7 @@ def analise(nome):
         
         Amin.append(np.mean(intf(tint[indpicMm])))
         sAmin.append(np.std(intf(tint[indpicMm]))/len(indpicMm))
-        
+        envelopes.append(intf)
         print(Amax[i])
         print(Amin[i])
         
@@ -107,7 +108,7 @@ def analise(nome):
         print(f'Pbat = {Pbat[i]} +- {sPbat[i]} s ')
         print(f'Posc = {Posc[i]} +- {sPosc[i]} s ')
 
-    resultado = {'r0': r0, 'Pbat': Pbat, 'sPbat': sPbat, 'Posc': Posc, 'sPosc': sPosc, "Amax": Amax, "sAmax": sAmax, "Amin": Amin, "sAmin": sAmin, "envelope": intf, "t": t}
+    resultado = {'r0': r0, 'Pbat': Pbat, 'sPbat': sPbat, 'Posc': Posc, 'sPosc': sPosc, "Amax": Amax, "sAmax": sAmax, "Amin": Amin, "sAmin": sAmin, "envelope": envelopes, "t": t}
     return resultado
 
 
@@ -138,8 +139,8 @@ if __name__ == '__main__':
     resultado0 = analise(f'{pasta}\\dado-{0}')
     resultado1 = analise(f'{pasta}\\dado-{1}')
     
-    env0 = resultado0['envelope']
-    env1 = resultado1['envelope']
+    env0 = resultado0['envelope'][0]
+    env1 = resultado1['envelope'][0]
     t = resultado0['t']
     
     dD = np.abs(env0(t)-env1(t))

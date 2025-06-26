@@ -47,7 +47,7 @@ m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 
 g=-9.81e3
 
-tsim = 100
+tsim = 1000
 dt = 1e-4
 razaoSalvar = 1e1
 
@@ -60,7 +60,7 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 
-numerosim ='Sim-Longo-1'
+numerosim ='Sim-Longo-2'
 
 forca = 'estacionaria'
 
@@ -125,7 +125,7 @@ arraysalvaValores=[
               ['pontos de equilíbrio, partículas simultâneas', ''],
               ['z0', f'{req[0]:.4e} mm'],
               ['z1', f'{req[1]:.4e} mm'],
-              ['posição simulada', ''],
+              ['posição simulada (em relação ao equilíbrio)', ''],
               ['z0', f'{ponto[0]:.4e} mm'],
               ['z0', f'{ponto[1]:.4e} mm'],
               ['tempo de simulação', f'{tsim:.4e} s'],
@@ -148,7 +148,7 @@ ts = np.arange(0, tsim, dt)
 
 tss = np.array_split(ts[1:], np.ceil(len(ts)/1e4))     
 
-r0 = ponto
+r0 = z0s
 v0 = [0,0]
 t0 = 0
 rs=[[],[]]
@@ -171,7 +171,8 @@ for i, tsi in enumerate(tss):
     vss = np.concatenate((vsf, sol[2:,filtro]), axis=1)
     ts = np.concatenate((ts, tsief[filtro]))
     
-    print(i+1)
+    if ((i+1)%10==0):
+        print(i+1)
 salvar = {'r0': ponto, 'rs': rs, 'vs': vsf, 't': ts}
 
 nome = f'{diretorio}\\dado-0'

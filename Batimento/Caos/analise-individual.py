@@ -58,7 +58,8 @@ def analise(nome):
         plt.plot(t, rs[i, :], '.')
         plt.plot(tl[indpicM], rsinterpolado[indpicM], '.')
         
-        #plt.xlim(0, 1.0)
+        #plt.xlim(80,100)
+        #plt.ylim(-10,10)
         
         intf = make_interp_spline(tl[indpicM], rsinterpolado[indpicM])
         tint = t[np.logical_and(t<tl[indpicM][-2], t>tl[indpicM][1])]#Os valores analisados para saber se há pico são aqueles que estão entre pontos reais que não são os da borda. Ou seja, não serão considerados válidos picos entre o primeiro e segundo valores usados na interpolação, nem entre os últimos dois, pois nesses intervalos po=dem haver efeitos da interpolação que gerariam falsos picos
@@ -116,7 +117,7 @@ def analise(nome):
 if __name__ == '__main__':
     
     #pasta='SimT-v2'
-    pasta='Sim-Longo-1'
+    pasta='Sim-Longo-2'
     #dados = 114 # 18
     #dados = 140 # 47
     #dados = 0 # 0

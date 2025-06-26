@@ -4,7 +4,7 @@ z1 4.1055e+00 mm
 posição simulada (em relação ao equilíbrio) 
 z0 -1.1000e+00 mm
 z0 -1.0000e+00 mm
-tempo de simulação 1.0000e+02 s
+tempo de simulação 5.0000e+02 s
 discretização de simulação 1.0000e-04 s
 discretização de salvamento 1.0000e-03 s
 rtol 1.4901e-11 s
