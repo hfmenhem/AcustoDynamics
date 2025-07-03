@@ -30,7 +30,7 @@ teste=dicMeio['f1']
 teste2=np.array([dicMeio['f1'][0]])
 
 #Perfil da força de Gor'kov
-sim = Simulador(np.array([dicMeio['f1'][0]]), np.array([dicMeio['f2'][0]]), dicMeio['f'], dicMeio['c'], np.array([a[0]]), np.array([m[0]]), dicMeio['rho'], dicMeio['v0']/10, h)
+sim = Simulador(np.array([dicMeio['f1'][0]]), np.array([dicMeio['f2'][0]]), dicMeio['f'], dicMeio['c'], np.array([a[0]]), np.array([m[0]]), dicMeio['rho'], dicMeio['v0']/10, h, 0)
 zs = np.linspace(-1*np.pi/dicMeio['k'], np.pi/dicMeio['k'], 300)
 r = np.expand_dims([0,0,1]*np.expand_dims(zs, 1),1)
 
@@ -51,15 +51,16 @@ plt.legend()
 # r0 = np.array([[[-0.25*np.pi/dicMeio['k'],0,0]], [[+0.25*np.pi/dicMeio['k'],0,0]]])
 # v0 = np.array([[[0.02,0,0.002]], [[-0.02,0,0]]])
 
-r0 = np.array([[[-0.1*np.pi/dicMeio['k'],0,0]], [[+0.1*np.pi/dicMeio['k'],0,0]]])
-v0 = np.array([[[0.0,0,0]], [[-0.0,0,0]]])
+r0 = np.array([[[-0.15*np.pi/dicMeio['k'],0,0]], [[+0.1*np.pi/dicMeio['k'],0,0]]])
+v0 = np.array([[[1.5,0,0]], [[-0.0,0,0]]])
 
 
-sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], dicMeio['v0']/10, h)
-dt = 0.001
-tempo = 10
+sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], dicMeio['v0']/10, h,0, e=.1)
+#sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], 0, h,0, e=1)
+dt = 0.00001
+tempo = 1
 
-rs, vs, t, TColsisoes = sim.SimularComColisão(r0, v0, dt, tempo)
+rs, vs, t, TColsisoes = sim.SimularComColisão2(r0, v0, dt, tempo)
 CorTempo = cmap(np.linspace(0, 1, len(t))) #Mapa de cor para indicar o tempo da simulação
 
 #Achar tempos para plotar circulos
@@ -108,24 +109,24 @@ plt.xlabel("t [s]")
 
 plt.show()
 
-#z x t
-plt.figure(dpi=300)
-for i in range(Npar):
-    plt.plot(t, rs[i, :, 2], linestyle='', marker='.',markersize=2)
-    plt.plot(TColsisoes, rColisao[i, :, 2], linestyle='', marker='.',markersize=2)
+# #z x t
+# plt.figure(dpi=300)
+# for i in range(Npar):
+#     plt.plot(t, rs[i, :, 2], linestyle='', marker='.',markersize=2)
+#     plt.plot(TColsisoes, rColisao[i, :, 2], linestyle='', marker='.',markersize=2)
 
-plt.ylabel("z [mm]")
-plt.xlabel("t [s]")
+# plt.ylabel("z [mm]")
+# plt.xlabel("t [s]")
 
-plt.show()
+# plt.show()
 
-#y x t
-plt.figure(dpi=300)
-for i in range(Npar):
-    plt.plot(t, rs[i, :, 1], linestyle='', marker='.',markersize=2)
-    plt.plot(TColsisoes, rColisao[i, :, 1], linestyle='', marker='.',markersize=2)
+# #y x t
+# plt.figure(dpi=300)
+# for i in range(Npar):
+#     plt.plot(t, rs[i, :, 1], linestyle='', marker='.',markersize=2)
+#     plt.plot(TColsisoes, rColisao[i, :, 1], linestyle='', marker='.',markersize=2)
 
-plt.ylabel("y [mm]")
-plt.xlabel("t [s]")
+# plt.ylabel("y [mm]")
+# plt.xlabel("t [s]")
 
-plt.show()
+# plt.show()

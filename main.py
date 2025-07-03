@@ -5,7 +5,7 @@ import matplotlib as mpl
 import pickle 
 import scipy as sc
 from scipy.integrate import odeint
-
+from scipy.integrate import solve_ivp
 class Simulador:
     
     def __init__(self, f1, f2, f, c, a, m, rho, v0, h, dinvis, plano = None, e=0.3):   
@@ -309,6 +309,34 @@ class Simulador:
         
         y = [*v.flatten(), *A.flatten()]
         return y
+    
+    def SimAcCol(self, t, y, g):
+        r = y[:int(len(y)/2)].reshape((-1,1,3))
+        v = y[int(len(y)/2):].reshape((-1,1,3))
+        
+        MR = r - np.transpose(r, (1,0,2))
+        Pin = self.PhiIn(r) #[mm^2/s]
+        GPin = self.GradPhiIn(r)
+        HPin = self.HPhiIn(r)
+        
+        
+        
+        Psc = self.PhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)) )
+        GPsc = self.GradPhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)))
+        HPsc = self.HPhiSc(MR, np.transpose(Pin), np.transpose(GPin, axes=(1,0,2)))
+        
+        Pt  = np.sum(Psc , axis = 1,keepdims=True) + Pin
+        GPt = np.sum(GPsc, axis = 1,keepdims=True) + GPin
+        HPt = np.sum(HPsc, axis = 1,keepdims=True) + HPin
+        
+        Fac = self.FGorKov(Pt, GPt, HPt) #[uN]
+
+
+        Far = -6*np.pi*self.dinvis*np.expand_dims(self.a, 2)*v
+        A =( (Fac+Far)/np.expand_dims(self.m, 2)) + np.expand_dims(g, (0,1)) 
+        
+        y = [*v.flatten(), *A.flatten()]
+        return y
         
     
     def SimularComColisão(self, r0, v0, dt, tempo, g=[0,0,0]):
@@ -436,6 +464,74 @@ class Simulador:
         ts=ts[0:t+1]
         
         return rs, vs, ts, TColsisoes
+    
+    def SimularComColisão2(self, r0, v0, dt, tempo, g=[0,0,0]):
+        nPar = np.shape(r0)[0]
+        
+        #Talvez Fazer uma funçãço que testa "encostamento": pega a velocidade relativa radial, se ela for zero com direção -1 (está com velocidade tentendo a entrar na bola)
+        #Talvez implementar força na própria equação diferencial
+        
+        def colisao(t, y, g):
+            y = np.array(y)
+            r = y[:int(len(y)/2)].reshape((-1,1,3))
+            MR = r - np.transpose(r, (1,0,2))
+            
+            D = np.linalg.norm(MR, axis=2)- (self.a + np.transpose(self.a, (1,0)))
+            D = D.flatten()
+            idx = (np.abs(D)).argmin()
+            D=D[idx]
+            return  D
+                    
+        colisao.terminal = True
+        colisao.direction = -1
+
+    
+
+        tcol = 0
+        ys = np.zeros((nPar*6, 0))
+        tss = np.zeros((0))
+        TColsisoes=[]
+        while tcol <tempo:
+            sol = solve_ivp(self.SimAcCol, (tcol, tempo), [*r0.flatten(), *v0.flatten()], dense_output=True, args=(g,), events=colisao)
+            tcol0 = tcol
+            tcol = sol.t_events[0]
+            if len(tcol) ==0:
+                tcol = tempo
+                            
+            ts = np.arange(tcol0, tcol, dt)
+            ys = np.concatenate((ys, sol.sol(ts)), axis=1)
+            tss =np.concatenate((tss, ts))
+            if len(tcol) !=0:               
+                TColsisoes = np.append(TColsisoes, tcol)
+                
+                #calculando colisão
+                r0 = ys[:nPar*3,-1].reshape((-1,1,3))
+                v0 = ys[nPar*3:, -1].reshape((-1,1,3))
+                               
+                MR = r0 - np.transpose(r0, (1,0,2))
+                Mvrel = v0 - np.transpose(v0, (1,0,2)) #velocidade relativa
+                MRhat = MR/np.linalg.norm(MR, axis= 2, keepdims=True)       
+                vradrel = np.einsum('ijk, ijk -> ij', Mvrel, MRhat) #velocidade radial da partícula i em relação a j
+                dvrad = (1+self.e)*self.m/(self.m+np.transpose(self.m))*vradrel
+                dv =MRhat*np.expand_dims(dvrad, 2)
+                
+                D = np.linalg.norm(MR, axis=2)- (self.a + np.transpose(self.a, (1,0)))
+                dv=np.where(np.isnan(dv), 0, dv)
+                dv = np.where(np.expand_dims(D, 2), dv, np.zeros(np.shape(dv)))
+                dv = np.transpose(np.sum(dv, axis=0, keepdims=True),(1,0,2))
+                
+                v0 = v0+dv
+            
+
+        rs = np.transpose(ys)[:, :nPar*3].reshape((-1, nPar, 3))
+        vs = np.transpose(ys)[:, nPar*3:].reshape((-1, nPar, 3))
+        
+        rs = np.transpose(rs, (1,0,2))
+        vs = np.transpose(vs, (1,0,2))
+        
+        
+        
+        return rs, vs, tss, TColsisoes
     
     def calculaColisao(self, indices, r, v):
         Dv = np.zeros(np.shape(v))
