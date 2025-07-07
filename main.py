@@ -105,7 +105,6 @@ class Simulador:
             r = np.expand_dims(r, 3)
             #a lista de r0's e n's está no eixo de número 3 (4º eixo)
             rl = np.linalg.norm(r-self.r0, axis=2, keepdims=True)
-            teste=rl[0,0,0,:]
             cos = np.expand_dims(np.einsum('ijkl,ijkl->ijl', self.n, r-self.r0), 2)/rl
         
             sen2 = 1-(cos**2)
@@ -334,6 +333,25 @@ class Simulador:
 
         Far = -6*np.pi*self.dinvis*np.expand_dims(self.a, 2)*v
         A =( (Fac+Far)/np.expand_dims(self.m, 2)) + np.expand_dims(g, (0,1)) 
+         
+        #calcula enconstado
+        MRl = np.linalg.norm(MR, axis=2)- (self.a + np.transpose(self.a, (1,0)))
+        MRl = MRl + np.triu(np.ones(np.shape(MR[:,:,0]))*np.inf) #Matriz triangular das distâncias entre partículas
+        
+        MV = v - np.transpose(v, (1,0,2))
+        MVn = np.einsum('ijk,ijk->ij', MV, MR/np.linalg.norm(MR, axis=2, keepdims=True)) + np.triu(np.ones(np.shape(MR[:,:,0]))*np.inf) #Matriz triangular das Velocidades normais
+        
+        if self.HaPlano:
+            RP = np.transpose(np.dot((r-self.Pp), self.Np) - self.a)
+            MRl = np.append(MRl, RP, axis=0)
+            VP = np.transpose(np.dot(v, self.Np))
+            MVn = np.append(MVn, VP, axis=0)
+        
+        indEncostado = np.argwhere(np.logical_and( np.isclose(MRl, 0) , np.isclose(MVn, 0))) 
+        DA = self.calculaEncostado(indEncostado, r, v, A)
+        
+        A=A+DA
+        # print(DA)
         
         y = [*v.flatten(), *A.flatten()]
         return y
@@ -465,22 +483,37 @@ class Simulador:
         
         return rs, vs, ts, TColsisoes
     
-    def SimularComColisão2(self, r0, v0, dt, tempo, g=[0,0,0]):
+    def SimularComColisão2(self, r0, v0, dt, tempo, g=[0,0,0], rtol=1.49012e-11, atol=1.49012e-11, max_step=np.inf):
         nPar = np.shape(r0)[0]
-        
-        #Talvez Fazer uma funçãço que testa "encostamento": pega a velocidade relativa radial, se ela for zero com direção -1 (está com velocidade tentendo a entrar na bola)
-        #Talvez implementar força na própria equação diferencial
         
         def colisao(t, y, g):
             y = np.array(y)
             r = y[:int(len(y)/2)].reshape((-1,1,3))
+            v = y[int(len(y)/2):].reshape((-1,1,3))
             MR = r - np.transpose(r, (1,0,2))
             
-            D = np.linalg.norm(MR, axis=2)- (self.a + np.transpose(self.a, (1,0)))
-            D = D.flatten()
-            idx = (np.abs(D)).argmin()
-            D=D[idx]
-            return  D
+            MRl = np.linalg.norm(MR, axis=2)- (self.a + np.transpose(self.a, (1,0)))    
+            MV = v - np.transpose(v, (1,0,2))
+            MVn = np.einsum('ijk,ijk->ij', MV, MR/np.linalg.norm(MR, axis=2, keepdims=True)) 
+           
+            
+            if self.HaPlano:
+                RP = np.transpose(np.dot((r-self.Pp), self.Np) - self.a)
+                MRl = np.append(MRl, RP, axis=0)
+                VP = np.transpose(np.dot(v, self.Np))
+                MVn = np.append(MVn, VP, axis=0)
+            
+            
+            MRl=np.where(np.logical_or(np.isclose(MVn,0),MVn>0),np.full(np.shape(MRl), np.inf) , MRl) 
+            MRl=np.where(np.eye(*np.shape(MRl))==1, np.inf, MRl) #para ignorar os elementos da diagonal, que sempre serão negativos e não fazem sentido
+            
+            print(MVn)
+            print(MRl)
+            
+            
+            idx = (np.abs(MRl.flatten())).argmin()
+            MRlmin=MRl.flatten()[idx]
+            return  MRlmin
                     
         colisao.terminal = True
         colisao.direction = -1
@@ -492,36 +525,74 @@ class Simulador:
         tss = np.zeros((0))
         TColsisoes=[]
         while tcol <tempo:
-            sol = solve_ivp(self.SimAcCol, (tcol, tempo), [*r0.flatten(), *v0.flatten()], dense_output=True, args=(g,), events=colisao)
+            sol = solve_ivp(self.SimAcCol, (tcol, tempo), [*r0.flatten(), *v0.flatten()], dense_output=True, args=(g,), events=colisao, rtol=rtol, atol=atol, max_step = max_step)
             tcol0 = tcol
             tcol = sol.t_events[0]
+
             if len(tcol) ==0:
                 tcol = tempo
-                            
-            ts = np.arange(tcol0, tcol, dt)
-            ys = np.concatenate((ys, sol.sol(ts)), axis=1)
-            tss =np.concatenate((tss, ts))
-            if len(tcol) !=0:               
+                ts = np.arange(tcol0, tcol, dt)
+                ys = np.concatenate((ys, sol.sol(ts)), axis=1)
+                tss =np.concatenate((tss, ts))
+            elif len(tcol) !=0:
+                ts = np.concatenate(((np.arange(tcol0, tcol, dt), tcol)))
+                ys = np.concatenate((ys, sol.sol(ts)), axis=1)
+                tss =np.concatenate((tss, ts))
+                
                 TColsisoes = np.append(TColsisoes, tcol)
                 
                 #calculando colisão
-                r0 = ys[:nPar*3,-1].reshape((-1,1,3))
-                v0 = ys[nPar*3:, -1].reshape((-1,1,3))
-                               
+                ycol = sol.sol(tcol)
+                r0 = ycol[:nPar*3, 0].reshape((-1,1,3))
+                v0 = ycol[nPar*3:, 0].reshape((-1,1,3))
+                
                 MR = r0 - np.transpose(r0, (1,0,2))
-                Mvrel = v0 - np.transpose(v0, (1,0,2)) #velocidade relativa
+                MRl = np.linalg.norm(MR, axis=2)- (self.a + np.transpose(self.a, (1,0)))
                 MRhat = MR/np.linalg.norm(MR, axis= 2, keepdims=True)       
-                vradrel = np.einsum('ijk, ijk -> ij', Mvrel, MRhat) #velocidade radial da partícula i em relação a j
-                dvrad = (1+self.e)*self.m/(self.m+np.transpose(self.m))*vradrel
-                dv =MRhat*np.expand_dims(dvrad, 2)
+              
+                dv = np.zeros(np.shape(v0))
+                dvP = np.zeros(np.shape(v0))
+                primeiraColisao=True
                 
-                D = np.linalg.norm(MR, axis=2)- (self.a + np.transpose(self.a, (1,0)))
-                dv=np.where(np.isnan(dv), 0, dv)
-                dv = np.where(np.expand_dims(D, 2), dv, np.zeros(np.shape(dv)))
-                dv = np.transpose(np.sum(dv, axis=0, keepdims=True),(1,0,2))
+                while(np.any(np.logical_not(np.isclose(dv, 0))) or np.any(np.logical_not(np.isclose(dvP, 0))) or primeiraColisao):
+                    MV = v0 - np.transpose(v0, (1,0,2))
+                    MVn = np.einsum('ijk,ijk->ij', MV, MRhat) 
+                    
+                    
+                    dvrad = (1+self.e)*self.m/(self.m+np.transpose(self.m))*MVn
+                    dv =MRhat*np.expand_dims(dvrad, 2)
+                    # print(dv)
+                    dv=np.where(np.isnan(dv), 0, dv)
+                    dv = np.where(np.expand_dims(np.logical_and(np.isclose(MRl,0), MVn<0) , 2), dv, np.zeros(np.shape(dv)))
+                    dv = np.transpose(np.sum(dv, axis=0, keepdims=True),(1,0,2))
+                    
+                    #contribuição do plano
+                    
+                    # print(MRl)
+                    # print(v0)
+                    print(dv)
+                    
+                    
+                    if self.HaPlano:
+                        RP = np.transpose(np.dot((r0-self.Pp), self.Np) - self.a)
+    
+                        VP = np.transpose(np.dot(v0, self.Np))
+                        
+                        dvrad = -1*(1+self.e)*VP
+                        dvP =self.Np*np.expand_dims(dvrad, 2)
+                        
+                        dvP=np.where(np.isnan(dvP), 0, dvP)
+    
+                        dvP = np.where(np.expand_dims(np.logical_and(np.isclose(0, RP), VP<0) , 2), dvP, np.zeros(np.shape(dvP)))
+                        dvP = np.transpose(dvP,(1,0,2))
+                        # print(VP)
+                        # print(RP)
+                        print(dvP)
+                        
+                    v0 = v0+dv+dvP
+                    primeiraColisao=False
                 
-                v0 = v0+dv
-            
+                
 
         rs = np.transpose(ys)[:, :nPar*3].reshape((-1, nPar, 3))
         vs = np.transpose(ys)[:, nPar*3:].reshape((-1, nPar, 3))
@@ -627,7 +698,7 @@ class Simulador:
              
         Nvec = (np.expand_dims(Ns, 1)*drhat)
 
-        Mind = np.zeros((len(r)+1,len(indices)))#Adicina=se um elemento a mais na linha das partículas para comportar o plano
+        Mind = np.zeros((len(r)+1,len(indices)))#Adicina-se um elemento a mais na linha das partículas para comportar o plano
         Mind[indices[:,0],range(len(indices[:,1]))] += -1
         Mind[indices[:,1],range(len(indices[:,1]))] += +1
         Mind = np.delete(Mind, len(r), axis=0) #No final é apagada a linha do plano

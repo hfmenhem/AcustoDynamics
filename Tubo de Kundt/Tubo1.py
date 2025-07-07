@@ -39,6 +39,6 @@ sim = Simulador(np.array(Npar*[[f1]]), np.array(Npar*[[f2]]), f, dicMeio['c'], a
 dt = 0.01
 tempo = 2
 
-rs, vs, t, TColsisoes = sim.SimularComColisão(r0, v0, dt, tempo, g=[-9.81 * (10**3),0,0])
+rs, vs, t, TColsisoes = sim.SimularComColisão2(r0, v0, dt, tempo, g=[-9.81 * (10**3),0,0])
 Simulador.graficos(rs, vs, t, TColsisoes, a)
 sim.saveSimulacao(rs, vs, t, f'Tubo1-{pressao}')
