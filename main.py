@@ -387,7 +387,7 @@ class Simulador:
         MRhat = MR/np.linalg.norm(MR, axis= 2, keepdims=True)
         
         #VALORES DA "MOLA" DA COLISÃO". Força máxima e fator que divide a soma dos raios para valor de máxima distensão
-        fmax = np.max(self.m)*np.linalg.norm(g)*1000
+        fmax = (np.max(self.m)*np.linalg.norm(g)*1000 )+1
         fatordxmax = 10000
         
         dxmax = (self.a + np.transpose(self.a))/fatordxmax
