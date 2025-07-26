@@ -50,7 +50,7 @@ v0 = np.array([[[1.5,0,0]], [[0,0,0]]])
 sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], 0*dicMeio['v0']/10, h,0, e=.01, plano=[[-1,0,0], [0,0,0]])
 #sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], 0, h,0, e=1)
 dt = 0.00001
-tempo = 4.5
+tempo =4.5
 
 rs, vs, t, TColsisoes = sim.SimularComColisão3(r0, v0, dt, tempo, g=[1,0,0], max_step=0.01)
 CorTempo = cmap(np.linspace(0, 1, len(t))) #Mapa de cor para indicar o tempo da simulação
