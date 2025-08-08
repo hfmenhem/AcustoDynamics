@@ -80,7 +80,7 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Sim11'
+    pasta='Sim12'
     dados =[]
     for x in os.listdir(pasta):
         if 'dado' in x:

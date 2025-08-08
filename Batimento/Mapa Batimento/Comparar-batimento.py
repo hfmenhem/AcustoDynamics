@@ -19,8 +19,8 @@ def plot(var0, var1, titulo, subt = None, label='', tipo = 1):
     fig, ax = plt.subplots(1,2,dpi=300)
     fig.suptitle(titulo)
     if subt is None:
-        ax[0].set_title('partícula 0')
-        ax[1].set_title('partícula 1')
+        ax[0].set_title('partícula A')
+        ax[1].set_title('partícula B')
     else:
         ax[0].set_title(subt[0])
         ax[1].set_title(subt[1])
@@ -43,7 +43,7 @@ def plot(var0, var1, titulo, subt = None, label='', tipo = 1):
             ax[i].yaxis.set_minor_locator(ticker.LinearLocator(31))
             
             ax[i].tick_params(axis="x", labelrotation=0)
-            ax[i].set_xlabel('$z_o$ - partícula 0 [mm]')
+            ax[i].set_xlabel('$z_o$ - partícula A [mm]')
         elif tipo == 2:
             ax[i].xaxis.set_major_locator(ticker.LinearLocator(2))
             ax[i].xaxis.set_minor_locator(ticker.LinearLocator(11))
@@ -51,16 +51,16 @@ def plot(var0, var1, titulo, subt = None, label='', tipo = 1):
             ax[i].yaxis.set_minor_locator(ticker.LinearLocator(31))
             
             ax[i].tick_params(axis="x", labelrotation=-10)
-            ax[i].set_xlabel('$z_o$ - partícula 0 [mm]')
+            ax[i].set_xlabel('$z_o$ - partícula A [mm]')
             
     
     if tipo == 1:
-        ax[0].set_ylabel('$z_o$ - partícula 1 [mm]')
+        ax[0].set_ylabel('$z_o$ - partícula B [mm]')
         ax[1].tick_params(axis="y", which = 'both', labelleft=False, right=True)
         ax[0].tick_params(axis="y", which = 'both', right=True)
         cbar = fig.colorbar(psm1, ax=ax, location='bottom', pad=0.21, label=label)
     elif tipo == 2:
-        ax[0].set_ylabel('$z_o$ - partícula 1 [mm]')
+        ax[0].set_ylabel('$z_o$ - partícula B [mm]')
         ax[1].tick_params(axis="y", which = 'both', labelleft=False, right=True)
         ax[0].tick_params(axis="y", which = 'both', right=True)
         cbar = fig.colorbar(psm1, ax=ax, location='right', label=label)
@@ -87,7 +87,7 @@ def organiza(arr):
     arr = np.take_along_axis(arr, np.expand_dims(arg2, 2), axis=1)
     return arr
 
-tipos = {'Sim2':'Onda plana', 'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim5': 'Onda plana -10s','Sim6-v2': "Onda plana - recorte", 'Sim7': "Onda plana - mapa força - recorte", 'Sim8': "Onda plana - usando mapa de forças", 'Sim9': "TinyLev - usando mapa de forças",} 
+tipos = {'Sim2':'Onda plana', 'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim5': 'Onda plana -10s','Sim6-v2': "Onda plana - recorte", 'Sim7': "Onda plana - mapa força - recorte", 'Sim8': "Onda plana", 'Sim9': "TinyLev"} #Sim8 e 9 usando mapa de forças
 
 f=40e3 #Hz
 dicMeio = Simulador.ar(1)
@@ -102,8 +102,11 @@ g=-9.81e3
 
 h=0
 
+
+
 numeroSim='Sim9'
 diretorio ='Sim9'
+
 
 with open(f'{diretorio}\\força', 'rb') as dbfile:
     dado = pickle.load(dbfile)

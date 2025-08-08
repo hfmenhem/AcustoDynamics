@@ -113,15 +113,16 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Sim11'
-    nome = 'Sim11'
+    pasta='Sim12'
+    nome = 'Sim12'
     #dados = 114 # 18
     #dados = 140 # 47
     #dados = 0 # 0
     #dados = 210 #Exemplo de pequenas oscilações
     
-    dados = 0 # Caso interessante
-    dd = 87 
+    dados = 21000 # Caso interessante
+    dd = -175
+    dd +=-1000
     dados +=dd
     
     #dados = 3506 # 

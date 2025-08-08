@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 import matplotlib.ticker as ticker
 
-pasta='Sim10'
+pasta='Sim12'
 #pasta='Sim4'
 Nharm = 2
 
@@ -32,8 +32,8 @@ def plot(var0, var1, titulo, subt = None, label='', tipo = 1):
     fig, ax = plt.subplots(1,2,dpi=300)
     fig.suptitle(titulo)
     if subt is None:
-        ax[0].set_title('partícula 0')
-        ax[1].set_title('partícula 1')
+        ax[0].set_title('partícula A')
+        ax[1].set_title('partícula B')
     else:
         ax[0].set_title(subt[0])
         ax[1].set_title(subt[1])
@@ -56,7 +56,7 @@ def plot(var0, var1, titulo, subt = None, label='', tipo = 1):
             ax[i].yaxis.set_minor_locator(ticker.LinearLocator(31))
             
             ax[i].tick_params(axis="x", labelrotation=0)
-            ax[i].set_xlabel('$z_o$ - partícula 0 [mm]')
+            ax[i].set_xlabel('$z_o$ - partícula A [mm]')
         elif tipo == 2:
             ax[i].xaxis.set_major_locator(ticker.LinearLocator(2))
             ax[i].xaxis.set_minor_locator(ticker.LinearLocator(11))
@@ -64,16 +64,16 @@ def plot(var0, var1, titulo, subt = None, label='', tipo = 1):
             ax[i].yaxis.set_minor_locator(ticker.LinearLocator(31))
             
             ax[i].tick_params(axis="x", labelrotation=-10)
-            ax[i].set_xlabel('$z_o$ - partícula 0 [mm]')
+            ax[i].set_xlabel('$z_o$ - partícula A [mm]')
             
     
     if tipo == 1:
-        ax[0].set_ylabel('$z_o$ - partícula 1 [mm]')
+        ax[0].set_ylabel('$z_o$ - partícula B [mm]')
         ax[1].tick_params(axis="y", which = 'both', labelleft=False, right=True)
         ax[0].tick_params(axis="y", which = 'both', right=True)
         fig.colorbar(psm1, ax=ax, location='bottom', pad=0.21, label=label)
     elif tipo == 2:
-        ax[0].set_ylabel('$z_o$ - partícula 1 [mm]')
+        ax[0].set_ylabel('$z_o$ - partícula B [mm]')
         ax[1].tick_params(axis="y", which = 'both', labelleft=False, right=True)
         ax[0].tick_params(axis="y", which = 'both', right=True)
         fig.colorbar(psm1, ax=ax, location='right', label=label)
@@ -126,17 +126,27 @@ filtro = np.logical_and(filtro, np.expand_dims(zs[:,:,1],2)<3.3)
 filtro = np.logical_and(filtro, np.expand_dims(zs[:,:,1],2)>3.29)
 #filtro = np.logical_and(filtro, ampB>0.7)
 
+filtro = np.full(np.shape(ampB), False)
+filtro[25, 95:105, :] = True
 ampBf = np.where(filtro, ampB, np.full(np.shape(ampB), np.nan))
+
+
+
 
 print(np.transpose((zs[:,:,0][filtro[:,:,0]], zs[:,:,1][filtro[:,:,0]])))
 
-tipos = {'Sim2':'Onda plana', 'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim5': 'Onda plana -10s','Sim6-v2': "Onda plana - recorte", 'Sim7': "Onda plana - mapa força - recorte", 'Sim8': "Onda plana - mapa força", 'Sim9': "TinyLev - mapa força",'Sim10': "Onda plana - mapa força - recorte 2"} 
+tipos = {'Sim2':'Onda plana', 'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim5': 'Onda plana -10s','Sim6-v2': "Onda plana - recorte", 'Sim7': "Onda plana - mapa força - recorte", 'Sim8': "Onda plana - mapa força", 'Sim9': "TinyLev - mapa força",'Sim10': "Onda plana - mapa força - recorte 2",'Sim12': "Onda plana - recorte"} 
 
 plot(ampB[:,:,0], ampB[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 2)
-plot(ampBf[:,:,0], ampBf[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 1)
-
+#plot(ampBf[:,:,0], ampBf[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 2)
 plot(f[:,:,0], f[:,:,1], tipos[pasta], label='Frequencia de batimento [Hz]', tipo = 2)
 # plot(ampB[:,:,0], ampB[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 2)
 # plot(Amaxs[:,:,0], Amaxs[:,:,1], tipos[pasta], label = 'Amplitude máxima [mm]', tipo = 2)
 # plot(Amins[:,:,0], Amins[:,:,1], tipos[pasta], label = 'Amplitude mínima [mm]', tipo = 2)
+
+
+
+
+
+plot(ampBf[:,:,0], ampBf[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 2)
 

@@ -96,7 +96,7 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Poincare-2'
+    pasta='Poincare-yAeq'
     #dados = 114 # 18
     #dados = 140 # 47
     #dados = 0 # 0

@@ -66,8 +66,8 @@ g=-9.81e3
 tsim = 10
 dt = 1e-4
     
-numeroSim='Sim11'
-diretorio ='Sim11'
+numeroSim='Sim12'
+diretorio ='Sim12'
 
 
     
@@ -87,11 +87,13 @@ if __name__ == '__main__':
     # ampdzeq1=[0.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 1
     # ampdzeq0=[-1.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 0
     # ampdzeq1=[-1.0, 1.0] # amplitude em relação ao ponto de equilíbrio da partícula 1
-    ampdzeq0=[-1.5, -0.7] # amplitude em relação ao ponto de equilíbrio da partícula 0
-    ampdzeq1=[-1.2, 0.2] # amplitude em relação ao ponto de equilíbrio da partícula 1
+    # ampdzeq0=[-1.5, -0.7] # amplitude em relação ao ponto de equilíbrio da partícula 0
+    # ampdzeq1=[-1.2, 0.2] # amplitude em relação ao ponto de equilíbrio da partícula 1
     
-    ampdzeq0=[ -1.2, -0.8] # amplitude em relação ao ponto de equilíbrio da partícula 0
-    ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
+    # ampdzeq0=[ -1.2, -0.8] # amplitude em relação ao ponto de equilíbrio da partícula 0
+    # ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
+    ampdzeq0=[-1.0, -0.5] # amplitude em relação ao ponto de equilíbrio da partícula 0
+    ampdzeq1=[-1.0, 0.0] # amplitude em relação ao ponto de equilíbrio da partícula 1
     
     Npts = 200
 

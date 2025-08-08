@@ -12,12 +12,12 @@ import time
 from scipy.integrate import solve_ivp
 start_time = time.time()
 
-def Simular(nome,r0):
+def Simular(nome,r0, yevent):
     ts = np.arange(0, tsim, dt)
     
-    def v0(t, y,g): return y[3]
+    def v0(t, y,g): return y[0]-yevent
     v0.terminal = False
-    v0.direction =-1
+    v0.direction =1
     # def z0(t, y,g): return y[0]
     # z0.terminal = False
     # z0.direction =1
@@ -82,7 +82,7 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 
-numerosim ='Poincare'
+numerosim ='Poincare-yAeq-teste'
 
 forca = 'estacionaria'
 
@@ -99,8 +99,11 @@ if __name__ == '__main__':
 
     z0eq=[0, Lamb/2]
 
-    ampdzeq0= -1.1 # amplitude em relação ao ponto de equilíbrio da partícula 0
+    ampdzeq0= [-0.6, -1.1] # amplitude em relação ao ponto de equilíbrio da partícula 0
     ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
+
+    ampdzeq0= -0.1 # amplitude em relação ao ponto de equilíbrio da partícula 0
+    ampdzeq1=-0.1 # amplitude em relação ao ponto de equilíbrio da partícula 1
     
     #ampdzeq0= -1.0 # amplitude em relação ao ponto de equilíbrio da partícula 0
     #ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
@@ -205,9 +208,11 @@ if __name__ == '__main__':
     #=====================Religamento=====================
     
     nomes = [f'{diretorio}\\dado-{i}' for i in range(len(z0s))]
+    yevents = np.full(len(nomes), req[0])
+    
     
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        result = executor.map(Simular, nomes, z0s)
+        result = executor.map(Simular, nomes, z0s, yevents)
     
     for r in result:
         print(r)
