@@ -26,41 +26,33 @@ m = (a**3*(4*np.pi/3))*(dicMeio['rho']*1000) # [g], densidade do ar vezes seu vo
 
 h=0
 
-teste=dicMeio['f1']
-teste2=np.array([dicMeio['f1'][0]])
-
-#Perfil da força de Gor'kov
-sim = Simulador(np.array([dicMeio['f1'][0]]), np.array([dicMeio['f2'][0]]), dicMeio['f'], dicMeio['c'], np.array([a[0]]), np.array([m[0]]), dicMeio['rho'], dicMeio['v0']/10, h, 0)
-zs = np.linspace(-1*np.pi/dicMeio['k'], np.pi/dicMeio['k'], 300)
-r = np.expand_dims([0,0,1]*np.expand_dims(zs, 1),1)
-
-Pin = sim.PhiIn(r) #[mm^2/s]
-GPin = sim.GradPhiIn(r)
-HPin = sim.HPhiIn(r)
-F = sim.FGorKov(Pin, GPin, HPin) #[uN]
-
-plt.figure(dpi=300)
-plt.plot(r[:, 0, 2],F[:, 0, 2], linestyle='', marker='.',markersize=2,  label='F programa')
-plt.title("Perfil da força de Gor'kov")
-plt.xlabel("z [mm]")
-plt.ylabel("Força [g*mm/s^2 = nN]")
-plt.legend()
 
 #-----------
 
 # r0 = np.array([[[-0.25*np.pi/dicMeio['k'],0,0]], [[+0.25*np.pi/dicMeio['k'],0,0]]])
 # v0 = np.array([[[0.02,0,0.002]], [[-0.02,0,0]]])
 
-r0 = np.array([[[-0.15*np.pi/dicMeio['k'],0,0]], [[+0.1*np.pi/dicMeio['k'],0,0]]])
-v0 = np.array([[[1.5,0,0]], [[-0.0,0,0]]])
+# r0 = np.array([[[-0.15*np.pi/dicMeio['k'],0,0]], [[+0.1*np.pi/dicMeio['k'],0,0]]])
+# v0 = np.array([[[1.5,0,0]], [[-0.0,0,0]]])
+
+r0 = np.array([[[-0.15*np.pi/dicMeio['k'],0,0]], [[-0.35*np.pi/dicMeio['k'],0,0]]])
+v0 = np.array([[[1.5,0,0]], [[0,0,0]]])
+
+# r0 = np.array([[[-a[0,0] ,0,0]], [[-3*a[0,0] -0.1 ,0,0]]])
+# v0 = np.array([[[-1,0,0]], [[0,0,0]]])
 
 
-sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], dicMeio['v0']/10, h,0, e=0)
+# r0 = np.array([[[-0.15*np.pi/dicMeio['k'],0,0]]])
+# v0 = np.array([[[1.5,0,0]]])
+
+
+
+sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], 0*dicMeio['v0']/10, h,0, e=.01, plano=[[-1,0,0], [0,0,0]])
 #sim = Simulador(dicMeio['f1'], dicMeio['f2'], dicMeio['f'], dicMeio['c'], a, m, dicMeio['rho'], 0, h,0, e=1)
 dt = 0.00001
-tempo = 1
+tempo =4.5
 
-rs, vs, t, TColsisoes = sim.SimularComColisão2(r0, v0, dt, tempo)
+rs, vs, t, TColsisoes = sim.SimularComColisão3(r0, v0, dt, tempo, g=[1,0,0], max_step=0.01)
 CorTempo = cmap(np.linspace(0, 1, len(t))) #Mapa de cor para indicar o tempo da simulação
 
 #Achar tempos para plotar circulos
@@ -71,6 +63,7 @@ indTi = np.argmin((np.abs(t - np.expand_dims(ti, 1))),axis= 1)
 indCol = np.any(np.equal(np.expand_dims(t, 1), np.expand_dims(TColsisoes,0)), axis=1)
 indtempocol = np.arange(0, len(indCol),1)[indCol]
 rColisao  = rs[:, indCol,:]
+TColsisoes=t[indCol]
 
 #achando todos os pontos em que queremos plotar as esferas como circulos
 indplotR = np.concatenate((indTi, indtempocol))
