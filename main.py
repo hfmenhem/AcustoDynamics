@@ -236,6 +236,12 @@ class Simulador:
         f = np.expand_dims(-1*(self.a**3)*np.pi*self.rho*(self.k**2), 2) *(part1+part2)
         return f
     
+    def UGorkov(self, Pt, GPt):
+        part1 =((self.k**2)*self.f1/3)*(np.abs(Pt)**2)
+        part2 = (-self.f2/2)*np.einsum('abj,abj->ab', np.conjugate(GPt),GPt)
+        
+        return np.pi*self.rho*(self.a**3)*(part1 +part2)
+        
     def tempoParaColisao(self, r0, v0, a0):
         #Essas matrizes não são tais que A = -At
         Mr0 = r0 - np.transpose(r0, (1,0,2))

@@ -42,6 +42,22 @@ def analise(nome):
     sAmax = []
     Amin = []
     sAmin = []
+    dicionario = {0: 'A', 1: 'B'}
+    
+    fig, ax = plt.subplots(2,1,dpi=300, figsize=(10,6))
+    fig.suptitle('Trajetória das partículas -  ($z_{o, A}, z_{o, B}$) ='+ f' ({r0[0]:.2f}, {r0[1]:.2f}) mm')
+    ax[0].set_ylabel('$z_B$ [mm]')
+    ax[1].set_ylabel('$z_A$ [mm]')
+    ax[1].set_xlabel('tempo [s]')
+    ax[0].tick_params(axis="x", which = 'both', labelbottom=False)
+    ax[0].tick_params(axis="x", which = 'minor', bottom=True)
+    ax[0].minorticks_on()
+    ax[1].minorticks_on()
+    ax[0].tick_params(axis="y", which = 'minor', left=False)
+    ax[1].tick_params(axis="y", which = 'minor', left=False)
+    #ax[0].tick_params(axis="y", which = 'both', right=True)
+    #ax[0].set_xticks([])
+    
     for i in range(Npar):
         intbasico = make_interp_spline(t, rs[i, :])
         tl=np.linspace(0, t[-1], 100*len(t))
@@ -50,22 +66,22 @@ def analise(nome):
         indpicM = sig.find_peaks(rsinterpolado)[0]
         #indpicm = sig.find_peaks(-1*rsinterpolado)[0]
         
-        plt.figure(dpi=300)
-        plt.title(f'sinal-{i}')
-        plt.xlabel('tempo [s]')
-        plt.ylabel('z [mm]')
-        plt.plot(tl, intbasico(tl), '-')
-        plt.plot(t, rs[i, :], '.')
-        plt.plot(tl[indpicM], rsinterpolado[indpicM], '.')
+        # plt.figure(dpi=300)
+        # plt.title(f'Trajetória da partícula {dicionario[i]}')
+        # plt.xlabel('tempo [s]')
+        # plt.ylabel('z [mm]')
+        #plt.plot(tl, intbasico(tl), '-')
+        ax[-i+1].plot(t, rs[i, :], '.', markersize=1, color='xkcd:beige')
+        #plt.plot(tl[indpicM], rsinterpolado[indpicM], '.')
         
         intf = make_interp_spline(tl[indpicM], rsinterpolado[indpicM])
         tint = t[np.logical_and(t<tl[indpicM][-2], t>tl[indpicM][1])]#Os valores analisados para saber se há pico são aqueles que estão entre pontos reais que não são os da borda. Ou seja, não serão considerados válidos picos entre o primeiro e segundo valores usados na interpolação, nem entre os últimos dois, pois nesses intervalos po=dem haver efeitos da interpolação que gerariam falsos picos
-        plt.plot(tint, intf(tint), '-')
+        ax[-i+1].plot(tint, intf(tint), '-', color = 'xkcd:navy blue')
         
         indpicMM = sig.find_peaks(intf(tint))[0]
         indpicMm = sig.find_peaks(-1*intf(tint))[0]
-        plt.plot(tint[indpicMM], intf(tint[indpicMM]), '.')
-        plt.plot(tint[indpicMm], intf(tint[indpicMm]), '.')
+        ax[-i+1].plot(tint[indpicMM], intf(tint[indpicMM]), '.', color = 'xkcd:dark teal')
+        ax[-i+1].plot(tint[indpicMm], intf(tint[indpicMm]), '.', color = 'xkcd:brick red')
         # if i==0:
         #     plt.ylim((0.79, 0.794))
         # else:
@@ -120,9 +136,9 @@ if __name__ == '__main__':
     #dados = 0 # 0
     #dados = 210 #Exemplo de pequenas oscilações
     
-    dados = 21000 # Caso interessante
-    dd = -175
-    dd +=-1000
+    dados = 9800 # Caso interessante
+    dd=78
+    dd+=1400
     dados +=dd
     
     #dados = 3506 # 

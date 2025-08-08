@@ -127,9 +127,9 @@ filtro = np.logical_and(filtro, np.expand_dims(zs[:,:,1],2)>3.29)
 #filtro = np.logical_and(filtro, ampB>0.7)
 
 filtro = np.full(np.shape(ampB), False)
-filtro[25, 95:105, :] = True
+filtro[30:60, 25:50, :] = True
 ampBf = np.where(filtro, ampB, np.full(np.shape(ampB), np.nan))
-
+ampBf = np.where(ampB>0.7, ampBf,  np.full(np.shape(ampB), np.nan))
 
 
 
