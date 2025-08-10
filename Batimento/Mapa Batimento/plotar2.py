@@ -79,6 +79,7 @@ def plot(var0, var1, titulo, subt = None, label='', tipo = 1):
         fig.colorbar(psm1, ax=ax, location='right', label=label)
         
     plt.show()
+    return {'fig': fig, 'ax': ax}
     
 #Organizando os dados
 def organiza(arr):
@@ -139,7 +140,7 @@ tipos = {'Sim2':'Onda plana', 'Sim3': 'Onda plana', 'Sim4-v2': "TinyLev", 'Sim5'
 
 plot(ampB[:,:,0], ampB[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 2)
 #plot(ampBf[:,:,0], ampBf[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 2)
-plot(f[:,:,0], f[:,:,1], tipos[pasta], label='Frequencia de batimento [Hz]', tipo = 2)
+salvar  = plot(f[:,:,0], f[:,:,1], tipos[pasta], label='Frequencia de batimento [Hz]', tipo = 2)
 # plot(ampB[:,:,0], ampB[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 2)
 # plot(Amaxs[:,:,0], Amaxs[:,:,1], tipos[pasta], label = 'Amplitude máxima [mm]', tipo = 2)
 # plot(Amins[:,:,0], Amins[:,:,1], tipos[pasta], label = 'Amplitude mínima [mm]', tipo = 2)
@@ -150,3 +151,8 @@ plot(f[:,:,0], f[:,:,1], tipos[pasta], label='Frequencia de batimento [Hz]', tip
 
 plot(ampBf[:,:,0], ampBf[:,:,1], tipos[pasta], label = 'Amplitude de batimento [mm]', tipo = 2)
 
+
+    
+    
+    
+    
