@@ -75,7 +75,7 @@ def analise(nome):
 
 if __name__ == '__main__':
     
-    pasta='Poincare-yAeq-L'
+    pasta='LyapunovGrid-v2'
     
     nomes =[]
     nomesL =[]
@@ -90,6 +90,7 @@ if __name__ == '__main__':
     
     lyap = []
     za = []
+
     for nome, nomeL in zip(nomes, nomesL):
         with open(nome, 'rb') as dbfile:
             dado = pickle.load(dbfile)
@@ -141,6 +142,7 @@ if __name__ == '__main__':
         
         lyap.append(popt[0])
         za.append(r0[0])
+   
     
     ax.set_xlabel('$z_B$ [mm]')
     ax.set_ylabel('$v_B$ [mm/s]')
@@ -148,8 +150,11 @@ if __name__ == '__main__':
     plt.show()
     
     fig = plt.figure(dpi=300)
+    
     ax = fig.add_subplot()
+    
+    plt.title('Expoente de Lyapunov, com $z_{o,B}$ = ' + f'{r0[1]:.2f} mm')
     ax.plot(za, lyap, '.')
-    ax.set_xlabel('$z_A$ [mm]')
+    ax.set_xlabel('$z_{o,A}$ [mm]')
     ax.set_ylabel('$\lambda$ ')
 

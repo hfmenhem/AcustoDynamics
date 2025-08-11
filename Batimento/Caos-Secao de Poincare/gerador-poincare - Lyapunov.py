@@ -70,7 +70,8 @@ m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 
 g=-9.81e3
 
-tsim = 30
+#tsim = 30 #Para espaço de fase, usar valor mais alto
+tsim = 10 #Para expoente de Lyapunov, usar valor mais baixo
 dt = 5e-1
 
 rtol = 1.49012e-11
@@ -82,7 +83,7 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 
-numerosim ='Poincare-yAeq-L'
+numerosim ='LyapunovGrid'
 
 forca = 'estacionaria'
 
@@ -101,39 +102,55 @@ if __name__ == '__main__':
     
     z0eq=[0, Lamb/2]
 
-    ampdzeq0= [-0.6, -1.1] # amplitude em relação ao ponto de equilíbrio da partícula 0
-    ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
-
-    #ampdzeq0= -1.0 # amplitude em relação ao ponto de equilíbrio da partícula 0
-    #ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
+    padrao = False
+    if padrao:
+        ampdzeq0= [-0.9, -1.1] # amplitude em relação ao ponto de equilíbrio da partícula 0
+        ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
+        
+        #ampdzeq0= -1.0 # amplitude em relação ao ponto de equilíbrio da partícula 0
+        #ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
+        
+        
+        Npts0 = 20
+        Npts1 = 1
     
+        if (type(ampdzeq0) is float or type(ampdzeq0) is int) and (type(ampdzeq1) is float or type(ampdzeq1) is int):
+            dzs0 = np.array(ampdzeq0)
+            dzs1 = np.array(ampdzeq1)
+            ampdzeq0=[ampdzeq0,ampdzeq0]
+            ampdzeq1=[ampdzeq1,ampdzeq1]
+            Npts0=1
+            Npts1=1
+        elif type(ampdzeq0) is float or type(ampdzeq0) is int:
+            dzs0 = np.array(ampdzeq0)
+            dzs1 = np.linspace(ampdzeq1[0], ampdzeq1[1], Npts1, endpoint=True)
+            ampdzeq0=[ampdzeq0,ampdzeq0]
+            Npts0=1
+        elif type(ampdzeq1) is float or type(ampdzeq1) is int:
+            dzs0 = np.linspace(ampdzeq0[0], ampdzeq0[1], Npts0, endpoint=True)
+            dzs1 = np.array(ampdzeq1)
+            ampdzeq1=[ampdzeq1,ampdzeq1]
+            Npts1=1
+        else:
+            dzs1 = np.linspace(ampdzeq1[0], ampdzeq1[1], Npts1, endpoint=True)
+            dzs0 = np.linspace(ampdzeq0[0], ampdzeq0[1], Npts0, endpoint=True)
+        
+        teste=np.meshgrid(dzs0, dzs1)
+        dzs=np.reshape(np.transpose(np.meshgrid(dzs0, dzs1), (1,2,0)), (-1, 2))
     
-    Npts0 = 20
-    Npts1 = 1
-
-    if (type(ampdzeq0) is float or type(ampdzeq0) is int) and (type(ampdzeq1) is float or type(ampdzeq1) is int):
-        dzs0 = np.array(ampdzeq0)
-        dzs1 = np.array(ampdzeq1)
-        ampdzeq0=[ampdzeq0,ampdzeq0]
-        ampdzeq1=[ampdzeq1,ampdzeq1]
-        Npts0=1
-        Npts1=1
-    elif type(ampdzeq0) is float or type(ampdzeq0) is int:
-        dzs0 = np.array(ampdzeq0)
-        dzs1 = np.linspace(ampdzeq1[0], ampdzeq1[1], Npts1, endpoint=True)
-        ampdzeq0=[ampdzeq0,ampdzeq0]
-        Npts0=1
-    elif type(ampdzeq1) is float or type(ampdzeq1) is int:
-        dzs0 = np.linspace(ampdzeq0[0], ampdzeq0[1], Npts0, endpoint=True)
-        dzs1 = np.array(ampdzeq1)
-        ampdzeq1=[ampdzeq1,ampdzeq1]
-        Npts1=1
     else:
-        dzs1 = np.linspace(ampdzeq1[0], ampdzeq1[1], Npts1, endpoint=True)
-        dzs0 = np.linspace(ampdzeq0[0], ampdzeq0[1], Npts0, endpoint=True)
-    
-    dzs=np.reshape(np.transpose(np.meshgrid(dzs0, dzs1), (1,2,0)), (-1, 2))
-    
+        Npts0 = 60
+        #Npts0 = 2
+        Npts1 = 4
+        z1pts = np.array([-0.9, -0.8, -0.7, -0.6])
+        z0inicio = np.linspace(-1, -1+(4*0.07), 4, endpoint=False)
+        z0pts = np.linspace(0, 0.15, Npts0, endpoint=False)
+        z0pts = np.expand_dims(z0inicio, 0)+np.expand_dims(z0pts, 1)
+        z1pts=np.broadcast_to(z1pts, np.shape(z0pts))
+        dzs=np.reshape(np.transpose((z0pts,z1pts), (1,2,0)), (-1, 2))
+        ampdzeq0=[0,0]
+        ampdzeq1=[0,0]
+        
     
     
     #=====================Achar ponto de quilíbrio em 2 partículas=====================
@@ -198,7 +215,10 @@ if __name__ == '__main__':
     np.savetxt(f'{diretorio}\\geral-trajetorias.txt', arraysalvaValores, fmt='%s')
     
     with open(f'{diretorio}\\pontos', 'wb') as dbfile:
-        pickle.dump([dzs0, dzs1], dbfile)
+        if padrao:
+            pickle.dump([dzs0, dzs1], dbfile)
+        else:
+            pickle.dump(dzs, dbfile)
         dbfile.close()
         
     with open(f'{diretorio}\\resolucao', 'wb') as dbfile:
@@ -213,6 +233,7 @@ if __name__ == '__main__':
     
     z0sL = z0s+DL
     
+    Simular(np.concatenate((nomes, nomesL))[0], np.concatenate((z0s, z0sL))[0], np.concatenate((yevents,yevents))[0])
     with concurrent.futures.ProcessPoolExecutor() as executor:
         result = executor.map(Simular, np.concatenate((nomes, nomesL)), np.concatenate((z0s, z0sL)), np.concatenate((yevents,yevents)))
     
