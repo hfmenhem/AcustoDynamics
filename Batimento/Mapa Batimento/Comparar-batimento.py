@@ -104,8 +104,8 @@ h=0
 
 
 
-numeroSim='Sim9'
-diretorio ='Sim9'
+numeroSim='Sim8'
+diretorio ='Sim8'
 
 
 with open(f'{diretorio}\\força', 'rb') as dbfile:
