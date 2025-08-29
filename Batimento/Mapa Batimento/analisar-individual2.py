@@ -140,6 +140,7 @@ if __name__ == '__main__':
     dd=78
     dd+=1400
     dados +=dd
+    print(dados)
     
     #dados = 3506 # 
     

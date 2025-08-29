@@ -14,17 +14,21 @@ f=40e3 #Hz
 dicMeio = Simulador.ar(1)
 
 a = np.array([[1]]) # [mm]
+a = np.array([[.795]]) # [mm]
 rhoPol = (900*(10**-6)) #[g/mm^3] #Material: PP
 cPol = 2740*(10**3) #[mm/s] 
 m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
+
+print(m)
 
 f1 = 1- ((dicMeio['rho']*(dicMeio['c']**2))/ (rhoPol*(cPol**2)))
 f2 = 2*((rhoPol-dicMeio['rho'])/((2*rhoPol)+dicMeio['rho']))
 
 g = 9.81e3
+g=0
 #g=0
 
-v0t = 10e3 #mm/s
+v0t = 10e3 #mm/s]
 
 Lamb=dicMeio["c"]/f
 
@@ -47,6 +51,10 @@ zrange1 =[Lamb*((1/2)-(1/5)), Lamb*((1/2)+(1/5))]
 
 z0, dz0 = np.linspace(*zrange0, 300,retstep=True)
 z1, dz1 = np.linspace(*zrange1, 300,retstep=True)
+
+# z0, dz0 = np.linspace(*zrange0, 1000,retstep=True)
+# z1, dz1 = np.linspace(*zrange1, 1000,retstep=True)
+
 
 #Força na partícula 1 (partícula 0 como source)
 U1=np.empty((len(z0), len(z1)))
@@ -91,8 +99,7 @@ for i, zsi in enumerate(z1):
 
 Ug = g*m[0,0]*(np.expand_dims(z1, 0)+np.expand_dims(z0, 1))
 
-Ut = U1+U0+Ug
-
+Ut = (((U1+U0))+Ug)
 
 fig, ax = plt.subplots(dpi=300, figsize=(10,10))
 #ax.set_aspect(1)
@@ -102,28 +109,76 @@ ax.set_xlabel(r'$z_0$ [mm]')
 ax.set_ylabel(r'$z_1$ [mm]')
 fig.colorbar(pcm, ax=ax, label=r'$U_t$ []', format="{x:.1e}")
 
+nome = 'Sim12-dado-exemplo2'
+
+with open(nome, 'rb') as dbfile:
+    dado = pickle.load(dbfile)
+    dbfile.close()
+    
+t = dado['t']
+rs = dado['rs']
+r0 = dado['r0']
+vs = dado['vs']
+
+apenasz = len(np.shape(rs))==2 #booleano indicando se temos apenas as componentes em Z (True) ou se temos todas as 3 componentes(False) 
+if not apenasz:
+    r0 = r0[:,2]
+    rs = rs[:, :, 2]
+    vs = vs[:, :, 2]
+
+ax.plot(*np.where(np.logical_and(t>0.2, t<0.6),rs, np.full(np.shape(rs), np.nan)), color='k', linewidth=0.1)
+ax.plot(*r0, '.')
+    
+    
+    
 
 Utint = RectBivariateSpline(z0, z1, Ut)
 
-d =np.linspace(1.5, 7, 200)
-R = np.linspace(1.5, 7, 190)
+Ut = Utint.ev(*rs)
+
+
+#K = (m[0,0]/2)*((vs[0,:]+vs[1,:])**2+(vs[1,:]-vs[0,:])**2)
+K = (m[0,0]/2)*((vs[0,:])**2+(vs[1,:])**2)
+
+Et = np.squeeze( K+Ut)
+
+fig, ax = plt.subplots(dpi=300, figsize=(10,10))
+#ax.set_aspect(1)
+ax.plot(t, Ut,'-')
+
+ax.plot(t, Et, '-')
+ax.plot(t, K,'-')
+ax.set_xlim(0.2, 0.6)
+
+print((np.max(Et)-np.min(Et))/np.mean(Et))
+
+# fig, ax = plt.subplots(dpi=300, figsize=(10,10))
+# #ax.set_aspect(1)
+# ax.plot(t, rs[0,:],'-')
+# ax.plot(t, rs[1,:],'-')
+
+# ax.set_xlim(0.2, 0.6)
+
+
+# d =np.linspace(1.5, 7, 200)
+# R = np.linspace(1.5, 7, 190)
 
 
  
 
-dl = np.expand_dims(d, 0)
-Rl = np.expand_dims(R, 1)
+# dl = np.expand_dims(d, 0)
+# Rl = np.expand_dims(R, 1)
 
 
 
-filtro =np.logical_and( np.logical_and(np.less_equal((Rl-dl)/2, max(z0)), np.greater_equal((Rl-dl)/2, min(z0))), np.logical_and(np.less_equal((Rl+dl)/2, max(z1)), np.greater_equal((Rl+dl)/2, min(z1))))
+# filtro =np.logical_and( np.logical_and(np.less_equal((Rl-dl)/2, max(z0)), np.greater_equal((Rl-dl)/2, min(z0))), np.logical_and(np.less_equal((Rl+dl)/2, max(z1)), np.greater_equal((Rl+dl)/2, min(z1))))
 
-Utrd = np.where(filtro, Utint.ev((Rl-dl)/2,(dl+Rl)/2), np.full(np.shape(dl), np.nan))
+# Utrd = np.where(filtro, Utint.ev((Rl-dl)/2,(dl+Rl)/2), np.full(np.shape(dl), np.nan))
 
-fig, ax = plt.subplots(dpi=300, figsize=(10,10))
-#ax.set_aspect(1)
-pcm = ax.contourf(d, R, Utrd, levels=20)
-ax.set_title("Potencial acústico total do sistema")
-ax.set_xlabel(r'$d$ [mm]')
-ax.set_ylabel(r'$R$ [mm]')
-fig.colorbar(pcm, ax=ax, label=r'$U_t$ []', format="{x:.1e}")
+# fig, ax = plt.subplots(dpi=300, figsize=(10,10))
+# #ax.set_aspect(1)
+# pcm = ax.contourf(d, R, Utrd, levels=20)
+# ax.set_title("Potencial acústico total do sistema")
+# ax.set_xlabel(r'$d$ [mm]')
+# ax.set_ylabel(r'$R$ [mm]')
+# fig.colorbar(pcm, ax=ax, label=r'$U_t$ []', format="{x:.1e}")

@@ -6,6 +6,8 @@ from main import Simulador
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from scipy.interpolate import CubicSpline
+from scipy.differentiate import derivative
 
 #Este código testa se o programa calcula corretamente a força acústica secundária
 
@@ -93,11 +95,19 @@ HPt = np.sum(HPsc, axis = 1,keepdims=True) + HPin
 F = sim.FGorKov(Pt, GPt, HPt) #[uN]
 Fin = sim.FGorKov(Pin, GPin, HPin)
 Fsc = F-Fin
+U = sim.UGorkov(Pt, GPt)
 
 Fscy = Fsc[:len(py),0, 1]
 Fscz = Fsc[len(py):,0, 2]
 Fty = F[:len(py),0,1]
 Ftz = F[len(py):,0,2]
+Uty = U[:len(py),0]
+Utz = U[len(py):,0]
+
+
+FtyU = -1*(CubicSpline(ys, Uty))(ys, 1)
+FtzU = -1*(CubicSpline(zs, Utz))(zs, 1)
+
 
 
 
@@ -113,6 +123,9 @@ Fscy = np.where(Filtroy,Fscy, np.full(np.shape(Fscy), np.nan))
 Fscz = np.where(Filtroz,Fscz, np.full(np.shape(Fscz), np.nan))
 Fty = np.where(Filtroy,Fty, np.full(np.shape(Fty), np.nan))
 Ftz =  np.where(Filtroz,Ftz, np.full(np.shape(Ftz), np.nan))
+FtyU = np.where(Filtroy,FtyU, np.full(np.shape(FtyU), np.nan))
+FtzU =  np.where(Filtroz,FtzU, np.full(np.shape(FtzU), np.nan))
+
 
 
 dataZcomsol = pd.read_csv('Total_force_axial.txt', sep=",", header=None, skiprows=8)
@@ -126,6 +139,7 @@ Fycomsol=np.array(dataYcomsol[1])*1e6
 #Plotar módulo da força
 figy, axy = plt.subplots(dpi=300, figsize=(10,10))
 plt.plot(ys, Fty, label='Python')
+plt.plot(ys, FtyU, label='Potencial')
 plt.plot(ycomsol, Fycomsol, label='COMSOL')
 axy.set_title("Força acústica total no eixo y - h=0")
 axy.set_xlabel('y [mm]')
@@ -135,10 +149,22 @@ figy.show()
 
 figy, axy = plt.subplots(dpi=300, figsize=(10,10))
 plt.plot(zs, Ftz, label='Python')
+plt.plot(zs, FtzU, label='Potencial')
 plt.plot(zcomsol, Fzcomsol, label='COMSOL')
 axy.set_title("Força acústica total no eixo z - h=0")
 axy.set_xlabel('z [mm]')
 axy.set_ylabel('Fz [uN]')
 plt.legend(fontsize=12)
 figy.show()
+
+figU, axU = plt.subplots(dpi=300, figsize=(10,10))
+plt.plot(zs, Utz)
+#plt.xlim(5, 35)
+plt.ylim(-2, 1)
+axU.set_title("Potencial ao longo do eixo z - h=0")
+axU.set_xlabel('z [mm]')
+axU.set_ylabel('U')
+plt.legend(fontsize=12)
+figU.show()
+
 

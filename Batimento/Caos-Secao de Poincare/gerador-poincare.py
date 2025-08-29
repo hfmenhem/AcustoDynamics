@@ -15,9 +15,9 @@ start_time = time.time()
 def Simular(nome,r0, yevent):
     ts = np.arange(0, tsim, dt)
     
-    def v0(t, y,g): return y[0]-yevent
+    def v0(t, y,g): return y[2]-yevent
     v0.terminal = False
-    v0.direction =1
+    v0.direction =-1
     # def z0(t, y,g): return y[0]
     # z0.terminal = False
     # z0.direction =1
@@ -70,7 +70,7 @@ m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 
 g=-9.81e3
 
-tsim = 60 #Para espaço de fase, usar valor mais alto
+tsim = 200 #Para espaço de fase, usar valor mais alto
 #tsim = 10 #Para expoente de Lyapunov, usar valor mais baixo
 dt = 5e-1
 
@@ -83,7 +83,7 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 
-numerosim ='PoincareGrid'
+numerosim ='PoincareGrid3'
 
 forca = 'estacionaria'
 
@@ -100,17 +100,17 @@ if __name__ == '__main__':
 
     z0eq=[0, Lamb/2]
 
-    padrao = False
+    padrao = True
     if padrao:
-        ampdzeq0= [-0.9, -1.1] # amplitude em relação ao ponto de equilíbrio da partícula 0
-        ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
+        ampdzeq0= [-1, 0] # amplitude em relação ao ponto de equilíbrio da partícula 0
+        ampdzeq1= [-1, 0] # amplitude em relação ao ponto de equilíbrio da partícula 1
         
         #ampdzeq0= -1.0 # amplitude em relação ao ponto de equilíbrio da partícula 0
         #ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
         
         
         Npts0 = 20
-        Npts1 = 1
+        Npts1 = 20
     
         if (type(ampdzeq0) is float or type(ampdzeq0) is int) and (type(ampdzeq1) is float or type(ampdzeq1) is int):
             dzs0 = np.array(ampdzeq0)
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         dzs=np.reshape(np.transpose(np.meshgrid(dzs0, dzs1), (1,2,0)), (-1, 2))
     
     else:
-        Npts0 = 5
+        Npts0 = 10
         #Npts0 = 2
         Npts1 = 4
         z1pts = np.array([-0.9, -0.8, -0.7, -0.6])
@@ -224,7 +224,8 @@ if __name__ == '__main__':
     #=====================Religamento=====================
     
     nomes = [f'{diretorio}\\dado-{i}' for i in range(len(z0s))]
-    yevents = np.full(len(nomes), req[0])
+    #yevents = np.full(len(nomes), req[0])
+    yevents = np.full(len(nomes), 0)
     
     
     with concurrent.futures.ProcessPoolExecutor() as executor:

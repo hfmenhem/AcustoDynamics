@@ -36,7 +36,8 @@ F = sim.FGorKov(Pin, GPin, HPin) #[uN]
 def Uteste(p, gp):
     return np.pi * rho * (a[0,0]**3)*(((k**2)*f1[0,0]*((np.abs(p)**2))/3)-(f2[0,0]*((np.abs(np.linalg.norm(gp, axis=1))**2))/2))
     
-Ut  = Uteste(Pin[:, 0], GPin[:, 0, :]) 
+#Ut  = Uteste(Pin[:, 0], GPin[:, 0, :]) 
+Ut = np.squeeze(sim.UGorkov(Pin, GPin))
 FUteste = -(Ut[1:]-Ut[:-1])/(r[1:, 0, 2]-r[:-1, 0, 2])
 
 plt.figure(dpi=300)
