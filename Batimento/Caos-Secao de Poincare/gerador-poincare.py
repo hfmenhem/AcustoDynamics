@@ -17,7 +17,7 @@ def Simular(nome,r0, yevent):
     
     def v0(t, y,g): return y[2]-yevent
     v0.terminal = False
-    v0.direction =-1
+    #v0.direction =-1
     # def z0(t, y,g): return y[0]
     # z0.terminal = False
     # z0.direction =1
@@ -83,7 +83,7 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 
-numerosim ='PoincareGrid3'
+numerosim ='PoincareGrid4'
 
 forca = 'estacionaria'
 

@@ -17,7 +17,7 @@ import concurrent.futures
 
 if __name__ == '__main__':
     
-    pasta='PoincareGrid3'
+    pasta='PoincareGrid4'
     nomes =[]
     for x in os.listdir(pasta):
         if 'dado' in x:
@@ -80,7 +80,7 @@ if __name__ == '__main__':
             
             ax.plot(rpic[1,-1*descarten:], vpic[1,-1*descarten:], rpic[0,-1*descarten:], '.', markersize=1, color = colors[i] )
             ax.plot(r0[1],0, r0[0], marker='+', color = colors[i])
-            ax.plot(rpic[1,0], vpic[1,0], rpic[0,0], marker='x', color = colors[i])
+            #ax.plot(rpic[1,0], vpic[1,0], rpic[0,0], marker='x', color = colors[i])
         
         ax.set_xlabel(r'$z_B$')
         ax.set_ylabel(r'$v_B$')
