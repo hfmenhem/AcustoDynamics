@@ -55,81 +55,46 @@ if __name__ == '__main__':
     cmappoincare = mpl.colormaps['viridis']
     
     lista = [(2,0), (2,1),(3,2),#caos?
-             (2,2), (7,5), (7,6),#parecido com alto batimento
-             (7,4),(17,0), #dentro
-              (17,1), (17,2),#alto batimento
-              (16,3),(7,7)#+ próximo do equilibrio?
+            
              
              ]
-    
-    listacor = [18,17,16,
-                13,14,15,
-                2,3,
-                8,9,
-                4,5
-                ]
-    
-    zorderlist=[12,11,10, 
-                10.5,7.8,7.5,
-                9,8,
-                7,6,
-                5,4
-        ]
-    
-    lista = [(2,0), (2,1),(3,2),#caos?            
-             ]
-    
-    listacor = [18,17,16,
-                ]
-    
-    zorderlist=[12,11,10, 
-        ]
+
 
     
-    cmap = mpl.colormaps['tab20b']
-    colors= cmap(np.linspace(0,1, 20))
-    
-    fig = plt.figure(dpi=300, figsize=(14,14))
-    ax = fig.add_subplot(projection='3d')
     #ax.view_init(elev=90, azim=-90)
-    ax.view_init(elev=15, azim=-120)
 
-    ax.set_xlabel(r'$z_A$ [mm]')
-    ax.set_ylabel(r'$z_B$ [mm]')
-    ax.set_zlabel(r'$v_B$ [mm/s]')
-    ax.set_title('Espaço de fase seccionado em $v_a=0$')
+    
     # ax.set_ylim(2.5, 5.2)
     # ax.set_xlim(-1.2, 1.2)
     # ax.set_zlim(-400, 400)
     
-    fig2 = plt.figure(dpi=300, figsize=(10,10))
-    ax2 = fig2.add_subplot()
-    ax2.set_xlabel(r'$z_A$ [mm]')
-    ax2.set_ylabel(r'$z_B$ [mm]')
-    ax2.set_title('Espaço de fase seccionado em $v_a=0$ projetado em $z_a \\times z_b$')
-    ax2.set_aspect(1)
-    manter = .05
+    manter = 0.05
     for i, coord in enumerate(lista):
         ind = inds[coord]
         nome = nomes[ind]
+        fig = plt.figure(dpi=300, figsize=(10,8))
+        ax = fig.add_subplot()
 
         with open(nome, 'rb') as dbfile:
             dado = pickle.load(dbfile)
             dbfile.close()
         r0 = dado['r0']
         rpic = dado['rpic']
+        ts = dado['t']
         vpic = dado['vpic']
 
         descarten = int(len(rpic[0,:])*manter)
         
-        ax.plot( rpic[0,-1*descarten:], rpic[1,-1*descarten:], vpic[1,-1*descarten:], '.', markersize=1, color = colors[listacor[i]], zorder=zorderlist[i] )
-        ax.plot(r0[0], r0[1],0, marker='+', color = colors[listacor[i]],zorder=zorderlist[i])
-        #ax.plot(rpic[1,0], vpic[1,0], rpic[0,0], marker='x', color = colors[i])
-        ax2.plot( rpic[0,-1*descarten:], rpic[1,-1*descarten:], '.', markersize=1, color = colors[listacor[i]], zorder=zorderlist[i] )
-        ax2.plot(r0[0], r0[1], marker='+', color = colors[listacor[i]],zorder=zorderlist[i])
-
+        ax.plot(range(len(rpic[0,:descarten])), rpic[0,:descarten], '.', markersize=1 )
+        ax.plot(range(len(rpic[0,-1*descarten:])), rpic[0,-1*descarten:], '.', markersize=1 )
         
-    plt.show()
+      
+        #ax.plot(rpic[1,0], vpic[1,0], rpic[0,0], marker='x', color = colors[i])
+    
+        
+        
+        
+        plt.show()
         
 
 
