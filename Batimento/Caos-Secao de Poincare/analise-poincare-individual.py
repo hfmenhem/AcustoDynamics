@@ -17,7 +17,7 @@ import concurrent.futures
 
 if __name__ == '__main__':
     
-    pasta='PoincareGrid4'
+    pasta='PoincareGrid-con_dev'
     nomes =[]
     for x in os.listdir(pasta):
         if 'dado' in x:
@@ -25,8 +25,8 @@ if __name__ == '__main__':
     
    
     
-    n0 = 20
-    n1 = 20
+    n0 = 5
+    n1 = 5
     
     r0s= []
     
@@ -54,40 +54,62 @@ if __name__ == '__main__':
     
     cmappoincare = mpl.colormaps['viridis']
     
-    lista = [(2,0), (2,1),(3,2),#caos?
-             (2,2), (7,5), (7,6),#parecido com alto batimento
-             (7,4),(17,0), #dentro
-              (17,1), (17,2),#alto batimento
-              (16,3),(7,7)#+ próximo do equilibrio?
+    # lista = [(2,0), (2,1),(3,2),#caos?
+    #          (2,2), (7,5), (7,6),#parecido com alto batimento
+    #          (7,4),(17,0), #dentro
+    #           (17,1), (17,2),#alto batimento
+    #           (16,3),(7,7)#+ próximo do equilibrio?
+             
+    #          ]
+    
+    # listacor = [18,17,16,
+    #             13,14,15,
+    #             2,3,
+    #             8,9,
+    #             4,5
+    #             ]
+    
+    # zorderlist=[12,11,10, 
+    #             10.5,7.8,7.5,
+    #             9,8,
+    #             7,6,
+    #             5,4
+    #     ]
+    
+    #lista = [(2,0), (2,1),(3,2)]#caos?            
+    #          
+    
+    # listacor = [18,17,16,
+    #             ]
+    
+    # zorderlist=[12,11,10, 
+    #     ]
+    
+    lista = np.transpose(np.reshape(np.meshgrid(np.arange(5), np.arange(5)), (2,-1)))
+    lista = [ (4,0),(0,4),
+             (4,4),  (1,4),
+             (4,1),(3,0),
+             (0,0),(0,3),
              
              ]
-    
-    listacor = [18,17,16,
-                13,14,15,
-                2,3,
-                8,9,
-                4,5
+
+    listacor = [9,10,
+                19,18,
+                15,14,
+                0,1,
                 ]
+
+                
     
-    zorderlist=[12,11,10, 
-                10.5,7.8,7.5,
-                9,8,
-                7,6,
-                5,4
-        ]
+    zorderlist= np.full(len(lista), 1)
     
-    lista = [(2,0), (2,1),(3,2),#caos?            
-             ]
-    
-    listacor = [18,17,16,
-                ]
-    
-    zorderlist=[12,11,10, 
-        ]
 
     
     cmap = mpl.colormaps['tab20b']
     colors= cmap(np.linspace(0,1, 20))
+    
+    cmap2 = mpl.colormaps['viridis']
+    colors2= cmap(np.linspace(0,1, 25))
     
     fig = plt.figure(dpi=300, figsize=(14,14))
     ax = fig.add_subplot(projection='3d')
@@ -108,9 +130,11 @@ if __name__ == '__main__':
     ax2.set_ylabel(r'$z_B$ [mm]')
     ax2.set_title('Espaço de fase seccionado em $v_a=0$ projetado em $z_a \\times z_b$')
     ax2.set_aspect(1)
+    
     manter = .05
+    #anter = 1
     for i, coord in enumerate(lista):
-        ind = inds[coord]
+        ind = inds[tuple(coord)]
         nome = nomes[ind]
 
         with open(nome, 'rb') as dbfile:
@@ -128,7 +152,11 @@ if __name__ == '__main__':
         ax2.plot( rpic[0,-1*descarten:], rpic[1,-1*descarten:], '.', markersize=1, color = colors[listacor[i]], zorder=zorderlist[i] )
         ax2.plot(r0[0], r0[1], marker='+', color = colors[listacor[i]],zorder=zorderlist[i])
 
-        
+    
+    # ax.set_xlim(-1.1,-.9)
+    # ax.set_ylim(3.2,3.4)
+    # ax.set_zlim(-30,30)
+    
     plt.show()
         
 

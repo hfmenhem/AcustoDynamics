@@ -70,7 +70,8 @@ m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 
 g=-9.81e3
 
-tsim = 200 #Para espaço de fase, usar valor mais alto
+tsim = 400 #Para espaço de fase, usar valor mais alto
+
 #tsim = 10 #Para expoente de Lyapunov, usar valor mais baixo
 dt = 5e-1
 
@@ -83,7 +84,7 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 
-numerosim ='PoincareGrid4'
+numerosim ='PoincareGrid-con_dev'
 
 forca = 'estacionaria'
 
@@ -102,15 +103,15 @@ if __name__ == '__main__':
 
     padrao = True
     if padrao:
-        ampdzeq0= [-1, 0] # amplitude em relação ao ponto de equilíbrio da partícula 0
-        ampdzeq1= [-1, 0] # amplitude em relação ao ponto de equilíbrio da partícula 1
+        ampdzeq0= [-0.95, -0.9] # amplitude em relação ao ponto de equilíbrio da partícula 0
+        ampdzeq1= [-.875, -0.825] # amplitude em relação ao ponto de equilíbrio da partícula 1
         
         #ampdzeq0= -1.0 # amplitude em relação ao ponto de equilíbrio da partícula 0
         #ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
         
         
-        Npts0 = 20
-        Npts1 = 20
+        Npts0 = 5
+        Npts1 = 5
     
         if (type(ampdzeq0) is float or type(ampdzeq0) is int) and (type(ampdzeq1) is float or type(ampdzeq1) is int):
             dzs0 = np.array(ampdzeq0)

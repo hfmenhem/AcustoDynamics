@@ -17,7 +17,7 @@ import concurrent.futures
 
 if __name__ == '__main__':
     
-    pasta='PoincareGrid4'
+    pasta='PoincareGrid-con_dev'
     nomes =[]
     for x in os.listdir(pasta):
         if 'dado' in x:
@@ -25,8 +25,8 @@ if __name__ == '__main__':
     
    
     
-    n0 = 20
-    n1 = 20
+    n0 = 5
+    n1 = 5
     
     r0s= []
     
@@ -56,15 +56,15 @@ if __name__ == '__main__':
     cmappoincare = mpl.colormaps['viridis']
     
     ns = []
-    for d in range(20):
+    for d in range(n1):
     #for d in[17]:        
         m = 1
-        display = nomesOrg[d*20*m:(d+1)*20*m]
+        display = nomesOrg[d*n0*m:(d+1)*m*n0]
         #display = nomesOrg
         colors = cmappoincare(np.linspace(0, 1, len(display)))
         
            
-        manter = .02
+        manter = .05
         #manter = 1
         fig = plt.figure(dpi=300, figsize=(10,8))
         ax = fig.add_subplot(projection='3d')
@@ -93,6 +93,10 @@ if __name__ == '__main__':
         ax.set_ylim(2.5, 5.2)
         ax.set_xlim(-1.2, 1.2)
         ax.set_zlim(-400, 400)
+        
+        ax.set_xlim(-1.1,-.9)
+        ax.set_ylim(3.2,3.4)
+        ax.set_zlim(-30,10)
         
         plt.show()
     print(len(ns))

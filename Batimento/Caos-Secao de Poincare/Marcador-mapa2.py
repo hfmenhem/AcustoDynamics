@@ -87,10 +87,11 @@ fig.colorbar(psm0, ax=ax, location='right', label='Amplitude de batimento [mm]')
 
 #Marcando os pontos
 
-pastaLyap = 'LyapunovGrid4'
+#pastaLyap = 'LyapunovGrid4'
 
+#pasta='PoincareGrid4'
+pasta='PoincareGrid-con_dev'
 
-pasta='PoincareGrid4'
 nomes =[]
 for x in os.listdir(pasta):
     if 'dado' in x:
@@ -98,8 +99,11 @@ for x in os.listdir(pasta):
 
 
 
-n0 = 20
-n1 = 20
+n0 = 5
+n1 = 5
+
+# n0 = 5
+# n1 = 5
 
 r0s= []
 
@@ -125,23 +129,51 @@ r0s = np.take_along_axis(r0s, np.expand_dims(arg2, 2), axis=1)
 inds = np.take_along_axis(inds, arg2, axis=1)
 
 
-lista = [(2,0), (2,1),(3,2),#caos?
-         (2,2), (7,5), (7,6),#quase fechando loop
-         (7,4),(17,0), #dentro
-          (17,1), (17,2),#alto batimento
-          (16,3),(7,7)#+ próximo do equilibrio?
+# lista = [(2,0), (2,1),(3,2),#caos?
+#          (2,2), (7,5), (7,6),#quase fechando loop
+#          (7,4),(17,0), #dentro
+#           (17,1), (17,2),#alto batimento
+#           (16,3),(7,7)#+ próximo do equilibrio?
+         
+#          ]
+
+# listacor = [18,17,16,
+#             13,14,15,
+#             2,3,
+#             8,9,
+#             4,5
+#             ]
+
+# lista = [(2,0), (2,1),(2,2),
+#          (3,0), (3,1),(3,2),
+#          (4,0), (4,1),(4,2),
+         
+         
+#          ]
+
+# listacor = [18,17,16,
+#             13,14,15,
+#             2,3,
+#             8,
+#             ]
+
+lista = [ (4,0),(0,4),
+         (4,4),  (1,4),
+         (4,1),(3,0),
+         (0,0),(0,3),
          
          ]
 
-listacor = [18,17,16,
-            13,14,15,
-            2,3,
-            8,9,
-            4,5
+listacor = [9,10,
+            19,18,
+            15,14,
+            0,1,
             ]
 
 lista = np.array(lista)
 pontos = r0s[lista[:,0],lista[:,1]]
+
+
 
 print(pontos)
 #ax.plot(pontos[:,0], pontos[:,1], '.', color='k', markersize=5, marker='+')
