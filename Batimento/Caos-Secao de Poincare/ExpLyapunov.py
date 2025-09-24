@@ -261,7 +261,7 @@ if __name__ == '__main__':
     #nomes = [f'{diretorio}\\dado-{i}' for i in range(len(z0s))]
     #yevents = np.full(len(nomes), req[0])
     
-    resultado = Simular('', z0s[0], [1/np.sqrt(2),1/np.sqrt(2),0,0])#[1/2,1/2,1/2,1/2]
+    resultado = Simular('', z0s[0], [1/2,1/2,1/2,1/2])
     
     # with concurrent.futures.ProcessPoolExecutor() as executor:
     #     result = executor.map(Simular, nomes, z0s, yevents)
