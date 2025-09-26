@@ -14,33 +14,40 @@ start_time = time.time()
 
 from matplotlib import pyplot as plt
 
-def Simular(nome,r0, w0):
+def Simular(nome,r0, w0s):
     SF = 0
     kt = 1
     v0 = [0,0]
     cond0 = [*r0, 0,0]
-    X1 = [0]
+    Xi = np.zeros((1,np.shape(w0s)[1]))
     while (SF==0):    
         sol = solve_ivp(SimAc,[(kt-1)*TRen, kt*TRen] , cond0, args=(g,), rtol=rtol, atol=atol, dense_output=True)
         cond0 = sol.sol(kt*TRen)
-        solT = solve_ivp(SimAcTangente,[(kt-1)*TRen, kt*TRen] , w0, args=(sol,), rtol=rtol, atol=atol, dense_output=False, t_eval=[kt*TRen, ])
-        w0 = solT.y[:, -1]
-        ak = np.linalg.norm(w0)
-        X1.append((X1[len(X1)-1]*((kt-1)*TRen)+np.log(ak))/(kt*TRen))
-        w0 = w0/ak
-        if (kt*TRen > Tmax )or (X1[len(X1)-1]<Xmin):
+        w0novo = np.empty(np.shape(w0s))
+        for i, w0 in enumerate(w0s):
+            solT = solve_ivp(SimAcTangente,[(kt-1)*TRen, kt*TRen] , w0, args=(sol,), rtol=rtol, atol=atol, dense_output=False, t_eval=[kt*TRen, ])
+            w0novo[:,i] = solT.y[:, -1]
+        
+        w0s,R = np.linalg.qr(w0novo) #O processo não é exatamente igual ao Gram-Schmidt, então os vetores finais podem estar invertidos
+        gammas = np.diagonal(R) #A diagonal de R é as normas dos vetores ortogonalizados antes da normalização
+        w0s = w0s*np.sign(gammas)
+        gammas = np.abs(gammas)
+        
+        Xi = np.append(Xi, np.expand_dims((Xi[-1, :]*((kt-1)*TRen)+np.log(gammas))/(kt*TRen), 0), axis=0)
+       
+        if (kt*TRen > Tmax ):#or np.any(X1s[-1, :]<Xmin)
             SF=1
         else:
             kt = kt+1
-    X1.pop(0)
-    X1 = np.array(X1)
-    ts = (np.arange(len(X1))+1)*TRen
-    salvar = {'r0': r0, 'X1': X1,  'ts': ts}
+    Xi = np.delete(Xi, 0,axis = 0)        
+  
+    ts = (np.arange(len(Xi[:,0]))+1)*TRen
+    salvar = {'r0': r0, 'Xi': Xi,  'ts': ts}
     #salvar = {'r0': r0, 'rs': rs, 'vs': vsf, 't': ts}
 
-    # with open(nome, 'wb') as dbfile:
-    #     pickle.dump(salvar, dbfile)
-    #     dbfile.close()
+    with open(nome, 'wb') as dbfile:
+        pickle.dump(salvar, dbfile)
+        dbfile.close()
         
     return salvar
 
@@ -96,8 +103,6 @@ m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 
 g=-9.81e3
 
-
-#tsim = 10 #Para expoente de Lyapunov, usar valor mais baixo
 dt = 5e-1
 
 rtol = 1.49012e-11
@@ -109,10 +114,10 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 TRen = 0.1
-Tmax = 10
+Tmax = 100
 Xmin = 0.01
 
-numerosim ='teste-lyapunov'
+numerosim ='esp-lyapunov'
 
 forca = 'estacionaria'
 
@@ -137,11 +142,8 @@ if __name__ == '__main__':
         ampdzeq0= [-0.95, -0.9] # amplitude em relação ao ponto de equilíbrio da partícula 0
         ampdzeq1= [-.875, -0.825] # amplitude em relação ao ponto de equilíbrio da partícula 1
         
-        ampdzeq0= -1.0/2 # amplitude em relação ao ponto de equilíbrio da partícula 0
+        ampdzeq0= -1.0 # amplitude em relação ao ponto de equilíbrio da partícula 0
         ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
-        
-        ampdzeq0=0.0
-        ampdzeq1=0.0
         
         Npts0 = 5
         Npts1 = 5
@@ -214,53 +216,53 @@ if __name__ == '__main__':
     
     #=====================Salvamento=====================
     
-    # if os.path.exists(f'{numerosim}'):
-    #     versao = 2
-    #     while(os.path.exists(f'{numerosim}-v{versao}')):
-    #         versao+=1
-    #     diretorio = f'{numerosim}-v{versao}'
-    # else:
-    #     diretorio = f'{numerosim}'
-    # os.mkdir(diretorio)
+    if os.path.exists(f'{numerosim}'):
+        versao = 2
+        while(os.path.exists(f'{numerosim}-v{versao}')):
+            versao+=1
+        diretorio = f'{numerosim}-v{versao}'
+    else:
+        diretorio = f'{numerosim}'
+    os.mkdir(diretorio)
     
-    # arraysalvaValores=[
-    #               #['deslocamento em z', f'{dz:.1f} mm'],
-    #               ['pontos de equilíbrio, partículas simultâneas', ''],
-    #               ['z0', f'{req[0]:.4e} mm'],
-    #               ['z1', f'{req[1]:.4e} mm'],
-    #               ['amplitude de amostragem', ''],
-    #               ['Delta zmin0', f'{ampdzeq0[0]:.4e} mm'],
-    #               ['Delta zmax0', f'{ampdzeq0[1]:.4e} mm'],
-    #               ['Delta zmin1', f'{ampdzeq1[0]:.4e} mm'],
-    #               ['Delta zmax1', f'{ampdzeq1[1]:.4e} mm'],
-    #               ['número de pontos na partícula 0', f'{Npts0}'],
-    #               ['número de pontos na partícula 1', f'{Npts1}'],
-    #               ['tempo de simulação', f'{tsim:.4e} s'],
-    #               ['discretização de salvamento', f'{dt:.4e} s'],
-    #               ['rtol', f'{rtol:.4e} s'],
-    #               ['atol', f'{atol:.4e} s']
-    #               ]
+    arraysalvaValores=[
+                  #['deslocamento em z', f'{dz:.1f} mm'],
+                  ['pontos de equilíbrio, partículas simultâneas', ''],
+                  ['z0', f'{req[0]:.4e} mm'],
+                  ['z1', f'{req[1]:.4e} mm'],
+                  ['amplitude de amostragem', ''],
+                  ['Delta zmin0', f'{ampdzeq0[0]:.4e} mm'],
+                  ['Delta zmax0', f'{ampdzeq0[1]:.4e} mm'],
+                  ['Delta zmin1', f'{ampdzeq1[0]:.4e} mm'],
+                  ['Delta zmax1', f'{ampdzeq1[1]:.4e} mm'],
+                  ['número de pontos na partícula 0', f'{Npts0}'],
+                  ['número de pontos na partícula 1', f'{Npts1}'],
+                  ['tempo de simulação', f'{Tmax:.4e} s'],
+                  ['discretização de salvamento', f'{dt:.4e} s'],
+                  ['rtol', f'{rtol:.4e} s'],
+                  ['atol', f'{atol:.4e} s']
+                  ]
     
     
-    # np.savetxt(f'{diretorio}\\geral-trajetorias.txt', arraysalvaValores, fmt='%s')
+    np.savetxt(f'{diretorio}\\geral-trajetorias.txt', arraysalvaValores, fmt='%s')
     
-    # with open(f'{diretorio}\\pontos', 'wb') as dbfile:
-    #     if padrao:
-    #         pickle.dump([dzs0, dzs1], dbfile)
-    #     else:
-    #         pickle.dump(dzs, dbfile)
-    #     dbfile.close()
+    with open(f'{diretorio}\\pontos', 'wb') as dbfile:
+        if padrao:
+            pickle.dump([dzs0, dzs1], dbfile)
+        else:
+            pickle.dump(dzs, dbfile)
+        dbfile.close()
         
-    # with open(f'{diretorio}\\resolucao', 'wb') as dbfile:
-    #     pickle.dump({'rtol': rtol, 'atol': atol, 'dt': dt, 'tsim': tsim}, dbfile)
-    #     dbfile.close()
+    with open(f'{diretorio}\\resolucao', 'wb') as dbfile:
+        pickle.dump({'rtol': rtol, 'atol': atol, 'dt': dt, 'tsim': Tmax}, dbfile)
+        dbfile.close()
     
     #=====================Religamento=====================
     
-    #nomes = [f'{diretorio}\\dado-{i}' for i in range(len(z0s))]
-    #yevents = np.full(len(nomes), req[0])
+    nomes = [f'{diretorio}\\dado-{i}' for i in range(len(z0s))]
     
-    resultado = Simular('', z0s[0], [1/2,1/2,1/2,1/2])
+    w0s = np.identity(4)
+    resultado = Simular(nomes[0], z0s[0], w0s)
     
     # with concurrent.futures.ProcessPoolExecutor() as executor:
     #     result = executor.map(Simular, nomes, z0s, yevents)
@@ -270,10 +272,12 @@ if __name__ == '__main__':
         
     print(f'O código demorou {(time.time() - start_time)/60:.1f} min')
     
-    fig = plt.figure(dpi=300)
-    plt.plot(resultado['ts'], resultado['X1'])
-    plt.xlabel('t[s]')
-    plt.ylabel('$X_1$ [Hz]')
+    
+    for i, res in enumerate(np.transpose(resultado['Xi'])):
+        fig = plt.figure(dpi=300)
+        plt.plot(resultado['ts'], res)
+        plt.xlabel('t[s]')
+        plt.ylabel(f'$X_{i+1}$ [Hz]')
 
 
 
