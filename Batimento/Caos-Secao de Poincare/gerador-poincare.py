@@ -21,7 +21,7 @@ def Simular(nome,r0, yevent):
     # def z0(t, y,g): return y[0]
     # z0.terminal = False
     # z0.direction =1
-    sol = solve_ivp(SimAc,[0, tsim] , [*r0, 0,0], t_eval=ts, args=(g,), rtol=rtol, atol=atol, events=v0)
+    sol = solve_ivp(SimAc,[0, tsim] , [*r0, 0,0], t_eval=ts, args=(g,), rtol=rtol, atol=atol, events=v0, method="DOP853")#method="DOP853"
     
     rs = sol.y[:2,:]
     vsf = sol.y[2:,:]
@@ -70,7 +70,7 @@ m = (a**3*(4*np.pi/3))*rhoPol # [g], densidade do ar vezes seu volume
 
 g=-9.81e3
 
-tsim = 400 #Para espaço de fase, usar valor mais alto
+tsim = 4*400 #Para espaço de fase, usar valor mais alto
 
 #tsim = 10 #Para expoente de Lyapunov, usar valor mais baixo
 dt = 5e-1
@@ -84,7 +84,7 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 
-numerosim ='PoincareGrid-con_dev'
+numerosim ='PoincareGrid-con_dev2-RK8'
 
 forca = 'estacionaria'
 

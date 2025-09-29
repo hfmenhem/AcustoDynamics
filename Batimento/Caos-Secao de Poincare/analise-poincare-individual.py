@@ -91,7 +91,7 @@ if __name__ == '__main__':
     # manter = [1-.05, 1]
     
     #===Região próxima da possível separatriz, V2
-    pasta='PoincareGrid-con_dev2'
+    pasta='PoincareGrid-con_dev'
     n0 = 5
     n1 = 5
     lista = [ (4,0),(0,4),(4,2), #circulos
@@ -157,18 +157,18 @@ if __name__ == '__main__':
     cmap2 = mpl.colormaps['viridis']
     colors2= cmap(np.linspace(0,1, 25))
     
-    # fig = plt.figure(dpi=300, figsize=(14,14))
-    # ax = fig.add_subplot(projection='3d')
-    # #ax.view_init(elev=90, azim=-90)
-    # ax.view_init(elev=15, azim=-120)
+    fig = plt.figure(dpi=300, figsize=(14,14))
+    ax = fig.add_subplot(projection='3d')
+    #ax.view_init(elev=90, azim=-90)
+    ax.view_init(elev=15, azim=-120)
 
-    # ax.set_xlabel(r'$z_A$ [mm]')
-    # ax.set_ylabel(r'$z_B$ [mm]')
-    # ax.set_zlabel(r'$v_B$ [mm/s]')
-    # ax.set_title('Espaço de fase seccionado em $v_a=0$')
-    # ax.set_ylim(2.5, 5.2)
-    # ax.set_xlim(-1.2, 1.2)
-    # ax.set_zlim(-400, 400)
+    ax.set_xlabel(r'$z_A$ [mm]')
+    ax.set_ylabel(r'$z_B$ [mm]')
+    ax.set_zlabel(r'$v_B$ [mm/s]')
+    ax.set_title('Espaço de fase seccionado em $v_a=0$')
+    ax.set_ylim(2.5, 5.2)
+    ax.set_xlim(-1.2, 1.2)
+    ax.set_zlim(-400, 400)
     
     fig2 = plt.figure(dpi=300, figsize=(30,30))
     ax2 = fig2.add_subplot()
@@ -198,19 +198,19 @@ if __name__ == '__main__':
 
         manterLen = np.round(len(rpic[0,:])*np.array(manter)).astype(int)
         
-        # ax.plot( rpic[0,manterLen[0]:manterLen[1]], rpic[1,manterLen[0]:manterLen[1]], vpic[1,manterLen[0]:manterLen[1]], '.', markersize=1, color = colors[listacor[i]], zorder=zorderlist[i] )
-        # ax.plot(r0[0], r0[1],0, marker='+', color = colors[listacor[i]],zorder=zorderlist[i])
-        #ax.plot(rpic[1,0], vpic[1,0], rpic[0,0], marker='x', color = colors[i])
+        ax.plot( rpic[0,manterLen[0]:manterLen[1]], rpic[1,manterLen[0]:manterLen[1]], vpic[1,manterLen[0]:manterLen[1]], '.', markersize=1, color = colors[listacor[i]], zorder=zorderlist[i] )
+        ax.plot(r0[0], r0[1],0, marker='+', color = colors[listacor[i]],zorder=zorderlist[i])
+        ax.plot(rpic[1,0], vpic[1,0], rpic[0,0], marker='x', color = colors[i])
         ax2.plot( rpic[0,manterLen[0]:manterLen[1]], rpic[1,manterLen[0]:manterLen[1]], '.', markersize=1, color = colors[listacor[i]], zorder=zorderlist[i] )
-        ax2.plot(r0[0], r0[1], marker='+', color = colors[listacor[i]],zorder=zorderlist[i])
+        ax2.plot(r0[0], r0[1], marker='+', color = colors[listacor[i]],zorder=zorderlist[i], markersize=50)
 
         # ax3.plot( rpic[0,manterLen[0]:manterLen[1]], vpic[1,manterLen[0]:manterLen[1]], '.', markersize=1, color = colors[listacor[i]], zorder=zorderlist[i] )
         # ax3.plot(r0[0], 0, marker='+', color = colors[listacor[i]],zorder=zorderlist[i])
 
 
-    # ax.set_xlim(-1.1,-.9)
-    # ax.set_ylim(3.2,3.4)
-    # ax.set_zlim(-30,30)
+    ax.set_xlim(-1.1,-.9)
+    ax.set_ylim(3.2,3.4)
+    ax.set_zlim(-30,30)
     
     ax2.set_xlim(-1.1,-.9)
     ax2.set_ylim(3.2,3.4)

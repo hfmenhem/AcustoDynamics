@@ -21,11 +21,11 @@ def Simular(nome,r0, w0s):
     cond0 = [*r0, 0,0]
     Xi = np.zeros((1,np.shape(w0s)[1]))
     while (SF==0):    
-        sol = solve_ivp(SimAc,[(kt-1)*TRen, kt*TRen] , cond0, args=(g,), rtol=rtol, atol=atol, dense_output=True)
+        sol = solve_ivp(SimAc,[(kt-1)*TRen, kt*TRen] , cond0, args=(g,), rtol=rtol, atol=atol, dense_output=True)#, method="DOP853"
         cond0 = sol.sol(kt*TRen)
         w0novo = np.empty(np.shape(w0s))
         for i, w0 in enumerate(w0s):
-            solT = solve_ivp(SimAcTangente,[(kt-1)*TRen, kt*TRen] , w0, args=(sol,), rtol=rtol, atol=atol, dense_output=False, t_eval=[kt*TRen, ])
+            solT = solve_ivp(SimAcTangente,[(kt-1)*TRen, kt*TRen] , w0, args=(sol,), rtol=rtol, atol=atol, dense_output=False, t_eval=[kt*TRen, ])#, method="DOP853"
             w0novo[:,i] = solT.y[:, -1]
         
         w0s,R = np.linalg.qr(w0novo) #O processo não é exatamente igual ao Gram-Schmidt, então os vetores finais podem estar invertidos
@@ -114,7 +114,7 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 TRen = 0.1
-Tmax = 100
+Tmax = 10
 Xmin = 0.01
 
 numerosim ='esp-lyapunov'
