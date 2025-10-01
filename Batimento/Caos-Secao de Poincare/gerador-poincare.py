@@ -1,4 +1,5 @@
 import sys, os
+print(os.path.dirname(__file__))
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 parent_dir = os.path.abspath(os.path.join(parent_dir, ".."))
 sys.path.append(parent_dir) #Para poder importar o main, que está em uma pasta anterior
@@ -87,9 +88,8 @@ if atol is None:
 numerosim ='PoincareGrid-con_dev2-RK8'
 
 forca = 'estacionaria'
-
     
-with open(f'{forca}-força', 'rb') as dbfile:
+with open(f'{os.path.dirname(__file__)}\\{forca}-força', 'rb') as dbfile:
     dado = pickle.load(dbfile)
     dbfile.close()
 

@@ -49,7 +49,8 @@ def Simular(nome,r0, w0s):
         pickle.dump(salvar, dbfile)
         dbfile.close()
         
-    return salvar
+    #return salvar
+    return  nome
 
 def SimAcArrasto(t,y, g, C):
     r = y[:2]
@@ -114,7 +115,8 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 TRen = 0.1
-Tmax = 10
+#Tmax = 100
+Tmax =0.2
 Xmin = 0.01
 
 numerosim ='esp-lyapunov'
@@ -122,7 +124,7 @@ numerosim ='esp-lyapunov'
 forca = 'estacionaria'
 
     
-with open(f'{forca}-força', 'rb') as dbfile:
+with open(f'{os.path.dirname(__file__)}\\{forca}-força', 'rb') as dbfile:
     dado = pickle.load(dbfile)
     dbfile.close()
 
@@ -142,8 +144,8 @@ if __name__ == '__main__':
         ampdzeq0= [-0.95, -0.9] # amplitude em relação ao ponto de equilíbrio da partícula 0
         ampdzeq1= [-.875, -0.825] # amplitude em relação ao ponto de equilíbrio da partícula 1
         
-        ampdzeq0= -1.0 # amplitude em relação ao ponto de equilíbrio da partícula 0
-        ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
+        # ampdzeq0= -1.0 # amplitude em relação ao ponto de equilíbrio da partícula 0
+        # ampdzeq1=-1.0 # amplitude em relação ao ponto de equilíbrio da partícula 1
         
         Npts0 = 5
         Npts1 = 5
@@ -216,13 +218,13 @@ if __name__ == '__main__':
     
     #=====================Salvamento=====================
     
-    if os.path.exists(f'{numerosim}'):
+    if os.path.exists(f'{os.path.dirname(__file__)}\\{numerosim}'):
         versao = 2
-        while(os.path.exists(f'{numerosim}-v{versao}')):
+        while(os.path.exists(f'{os.path.dirname(__file__)}\\{numerosim}-v{versao}')):
             versao+=1
-        diretorio = f'{numerosim}-v{versao}'
+        diretorio = f'{os.path.dirname(__file__)}\\{numerosim}-v{versao}'
     else:
-        diretorio = f'{numerosim}'
+        diretorio = f'{os.path.dirname(__file__)}\\{numerosim}'
     os.mkdir(diretorio)
     
     arraysalvaValores=[
@@ -260,24 +262,25 @@ if __name__ == '__main__':
     #=====================Religamento=====================
     
     nomes = [f'{diretorio}\\dado-{i}' for i in range(len(z0s))]
-    
     w0s = np.identity(4)
-    resultado = Simular(nomes[0], z0s[0], w0s)
+    w0ss = np.full((len(nomes), *np.shape(w0s)), w0s)
     
-    # with concurrent.futures.ProcessPoolExecutor() as executor:
-    #     result = executor.map(Simular, nomes, z0s, yevents)
+    #resultado = Simular(nomes[0], z0s[0], w0s)
     
-    # for r in result:
-    #     print(r)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        result = executor.map(Simular, nomes[:10], z0s[:10], w0ss[:10])
+    
+    for r in result:
+        print(r)
         
     print(f'O código demorou {(time.time() - start_time)/60:.1f} min')
     
     
-    for i, res in enumerate(np.transpose(resultado['Xi'])):
-        fig = plt.figure(dpi=300)
-        plt.plot(resultado['ts'], res)
-        plt.xlabel('t[s]')
-        plt.ylabel(f'$X_{i+1}$ [Hz]')
+    # for i, res in enumerate(np.transpose(resultado['Xi'])):
+    #     fig = plt.figure(dpi=300)
+    #     plt.plot(resultado['ts'], res)
+    #     plt.xlabel('t[s]')
+    #     plt.ylabel(f'$X_{i+1}$ [Hz]')
 
 
 
