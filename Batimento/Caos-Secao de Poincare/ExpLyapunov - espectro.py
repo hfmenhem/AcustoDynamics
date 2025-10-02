@@ -17,7 +17,6 @@ from matplotlib import pyplot as plt
 def Simular(nome,r0, w0s):
     SF = 0
     kt = 1
-    v0 = [0,0]
     cond0 = [*r0, 0,0]
     Xi = np.zeros((1,np.shape(w0s)[1]))
     while (SF==0):    
@@ -35,7 +34,7 @@ def Simular(nome,r0, w0s):
         
         Xi = np.append(Xi, np.expand_dims((Xi[-1, :]*((kt-1)*TRen)+np.log(gammas))/(kt*TRen), 0), axis=0)
        
-        if (kt*TRen > Tmax ):#or np.any(X1s[-1, :]<Xmin)
+        if (kt*TRen > Tmax ):
             SF=1
         else:
             kt = kt+1
@@ -86,6 +85,9 @@ def SimAcTangente(t, w, solr):
     DAac = np.array([[gradFz0[0](*r)[0,0]/m[0], gradFz0[1](*r)[0,0]/m[0]],
             [gradFz1[0](*r)[0,0]/m[1], gradFz1[1](*r)[0,0]/m[1]]])
     
+    # DAac = np.array([[Fz0.ev(*r, dx=1,dy=0)/m[0], Fz0.ev(*r, dx=0,dy=1)/m[0]],
+    #         [Fz1.ev(*r, dx=1,dy=0)/m[1], Fz0.ev(*r, dx=0,dy=1)/m[1]]])
+    
     ddv = np.matmul(DAac, dr)
  
     
@@ -115,9 +117,8 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 TRen = 0.1
-#Tmax = 100
-Tmax =0.2
-Xmin = 0.01
+Tmax =10
+
 
 numerosim ='esp-lyapunov'
 
@@ -131,14 +132,15 @@ with open(f'{os.path.dirname(__file__)}\\{forca}-força', 'rb') as dbfile:
 Fz0 = dado[0]
 Fz1 = dado[1]
 
-gradFz0 = [Fz0.partial_derivative(0,1),Fz0.partial_derivative(1,0)]
-gradFz1 = [Fz1.partial_derivative(0,1),Fz1.partial_derivative(1,0)]
+gradFz0 = [Fz0.partial_derivative(1,0),Fz0.partial_derivative(0,1)]
+gradFz1 = [Fz1.partial_derivative(1,0),Fz1.partial_derivative(0,1)]
 
 if __name__ == '__main__':
     #print(f'lambda = {Lamb:.2f} mm ')
-
+    
+    
     z0eq=[0, Lamb/2]
-
+    
     padrao = True
     if padrao:
         ampdzeq0= [-0.95, -0.9] # amplitude em relação ao ponto de equilíbrio da partícula 0
@@ -267,11 +269,22 @@ if __name__ == '__main__':
     
     #resultado = Simular(nomes[0], z0s[0], w0s)
     
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        result = executor.map(Simular, nomes[:5], z0s[:5], w0ss[:5])
+    nsimulacoes = 5
     
-    for r in result:
-        print(r)
+    n0 = 0
+    n1 = nsimulacoes
+
+    while(n0<=len(nomes)):
+        if n1>len(nomes):
+            n1 = len(nomes)
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            result = executor.map(Simular, nomes[n0:n1], z0s[n0:n1], w0ss[n0:n1])
+        
+        n0 = n0+nsimulacoes
+        n1 = n1+nsimulacoes
+        
+    # for r in result:
+    #     print(r)
         
     print(f'O código demorou {(time.time() - start_time)/60:.1f} min')
     

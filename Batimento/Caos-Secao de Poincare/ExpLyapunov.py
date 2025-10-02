@@ -77,7 +77,8 @@ def SimAcTangente(t, w, solr):
 
     DAac = np.array([[gradFz0[0](*r)[0,0]/m[0], gradFz0[1](*r)[0,0]/m[0]],
             [gradFz1[0](*r)[0,0]/m[1], gradFz1[1](*r)[0,0]/m[1]]])
-    
+    # DAac = np.array([[Fz0.ev(*r, dx=1,dy=0)/m[0], Fz0.ev(*r, dx=0,dy=1)/m[0]],
+    #         [Fz1.ev(*r, dx=1,dy=0)/m[1], Fz0.ev(*r, dx=0,dy=1)/m[1]]])
     ddv = np.matmul(DAac, dr)
  
     
@@ -124,8 +125,8 @@ with open(f'{forca}-força', 'rb') as dbfile:
 Fz0 = dado[0]
 Fz1 = dado[1]
 
-gradFz0 = [Fz0.partial_derivative(0,1),Fz0.partial_derivative(1,0)]
-gradFz1 = [Fz1.partial_derivative(0,1),Fz1.partial_derivative(1,0)]
+gradFz0 = [Fz0.partial_derivative(1,0),Fz0.partial_derivative(0,1)]
+gradFz1 = [Fz1.partial_derivative(1,0),Fz1.partial_derivative(0,1)]
 
 if __name__ == '__main__':
     #print(f'lambda = {Lamb:.2f} mm ')
