@@ -90,8 +90,8 @@ if __name__ == '__main__':
     # zorderlist= np.full(len(lista), 1)
     # manter = [1-.05, 1]
     
-    #===Região próxima da possível separatriz, V2
-    pasta='PoincareGrid-con_dev'
+    # #===Região próxima da possível separatriz, V2
+    pasta='PoincareGrid-con_dev2-RK8'
     n0 = 5
     n1 = 5
     lista = [ (4,0),(0,4),(4,2), #circulos
@@ -114,9 +114,32 @@ if __name__ == '__main__':
     
     zorderlist= np.full(len(lista), 1)
     #manter = [1-.0125, 1]
-    shift=8*0.1
-    comprimento = 0.2
+    shift=5*0.1
+    comprimento = 0.1
     manter = [shift, shift+comprimento]
+    manter=[0,1]
+    # #===Região próxima da possível separatriz - trajetorias que convergiram, V2
+    # pasta='PoincareGrid-con_dev2-RK8'
+    # pasta='PoincareGrid-con_dev2'
+    
+    # n0 = 5
+    # n1 = 5
+    # lista = [ (4,0),(0,4),(4,2), #circulos
+        
+             
+    #          ]
+  
+
+    # listacor = [9,10, 8,
+              
+    #             ]
+    
+    # zorderlist= np.full(len(lista), 1)
+    # #manter = [1-.0125, 1]
+    # shift=0*0.1
+    # comprimento = 0.1
+    # manter = [shift, shift+comprimento]
+    
     print(manter)
     #manter = [0.75, 1]
     
@@ -170,12 +193,12 @@ if __name__ == '__main__':
     ax.set_xlim(-1.2, 1.2)
     ax.set_zlim(-400, 400)
     
-    fig2 = plt.figure(dpi=300, figsize=(30,30))
-    ax2 = fig2.add_subplot()
-    ax2.set_xlabel(r'$z_A$ [mm]')
-    ax2.set_ylabel(r'$z_B$ [mm]')
-    ax2.set_title('Espaço de fase seccionado em $v_a=0$ projetado em $z_a \\times z_b$')
-    ax2.set_aspect(1)
+    # fig2 = plt.figure(dpi=300, figsize=(30,30))
+    # ax2 = fig2.add_subplot()
+    # ax2.set_xlabel(r'$z_A$ [mm]')
+    # ax2.set_ylabel(r'$z_B$ [mm]')
+    # ax2.set_title('Espaço de fase seccionado em $v_a=0$ projetado em $z_a \\times z_b$')
+    # ax2.set_aspect(1)
     
     # fig3 = plt.figure(dpi=300, figsize=(20,20))
     # ax3 = fig3.add_subplot()
@@ -201,8 +224,9 @@ if __name__ == '__main__':
         ax.plot( rpic[0,manterLen[0]:manterLen[1]], rpic[1,manterLen[0]:manterLen[1]], vpic[1,manterLen[0]:manterLen[1]], '.', markersize=1, color = colors[listacor[i]], zorder=zorderlist[i] )
         ax.plot(r0[0], r0[1],0, marker='+', color = colors[listacor[i]],zorder=zorderlist[i])
         ax.plot(rpic[1,0], vpic[1,0], rpic[0,0], marker='x', color = colors[i])
-        ax2.plot( rpic[0,manterLen[0]:manterLen[1]], rpic[1,manterLen[0]:manterLen[1]], '.', markersize=1, color = colors[listacor[i]], zorder=zorderlist[i] )
-        ax2.plot(r0[0], r0[1], marker='+', color = colors[listacor[i]],zorder=zorderlist[i], markersize=50)
+      
+        # ax2.plot( rpic[0,manterLen[0]:manterLen[1]], rpic[1,manterLen[0]:manterLen[1]], '.', markersize=1, color = colors[listacor[i]], zorder=zorderlist[i] )
+        # ax2.plot(r0[0], r0[1], marker='+', color = colors[listacor[i]],zorder=zorderlist[i], markersize=50)
 
         # ax3.plot( rpic[0,manterLen[0]:manterLen[1]], vpic[1,manterLen[0]:manterLen[1]], '.', markersize=1, color = colors[listacor[i]], zorder=zorderlist[i] )
         # ax3.plot(r0[0], 0, marker='+', color = colors[listacor[i]],zorder=zorderlist[i])
@@ -212,8 +236,8 @@ if __name__ == '__main__':
     ax.set_ylim(3.2,3.4)
     ax.set_zlim(-30,30)
     
-    ax2.set_xlim(-1.1,-.9)
-    ax2.set_ylim(3.2,3.4)
+    # ax2.set_xlim(-1.1,-.9)
+    # ax2.set_ylim(3.2,3.4)
     
     # ax3.set_xlim(-1.1,-.9)
     # ax3.set_ylim(-30,30)
