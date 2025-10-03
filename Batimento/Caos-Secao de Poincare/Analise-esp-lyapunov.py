@@ -19,7 +19,7 @@ if __name__ == '__main__':
     
        
     # #===Região próxima da possível separatriz, V2
-    pasta='esp-lyapunov-v3'
+    pasta='esp-lyapunov'
     n0 = 5
     n1 = 5
     lista = [ (4,0),(0,4),(4,2), #circulos
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     
     #
     #===Região próxima da possível separatriz, - as que convergem independentemente do integrador V2
-    # pasta='esp-lyapunov-v3'
+    # pasta='esp-lyapunov'
     # n0 = 5
     # n1 = 5
     # lista = [ (4,0),(0,4),(4,2)] #circulos 
