@@ -17,7 +17,6 @@ from matplotlib import pyplot as plt
 def Simular(nome,r0, w0):
     SF = 0
     kt = 1
-    v0 = [0,0]
     cond0 = [*r0, 0,0]
     X1 = [0]
     while (SF==0):    

@@ -23,7 +23,7 @@ def Simular(nome,r0, w0s):
         sol = solve_ivp(SimAc,[(kt-1)*TRen, kt*TRen] , cond0, args=(g,), rtol=rtol, atol=atol, dense_output=True, method="DOP853")#
         cond0 = sol.sol(kt*TRen)
         w0novo = np.empty(np.shape(w0s))
-        for i, w0 in enumerate(w0s):
+        for i, w0 in enumerate(np.transpose(w0s)):
             solT = solve_ivp(SimAcTangente,[(kt-1)*TRen, kt*TRen] , w0, args=(sol,), rtol=rtol, atol=atol, dense_output=False, t_eval=[kt*TRen, ], method="DOP853")#, method="DOP853"
             w0novo[:,i] = solT.y[:, -1]
         
@@ -38,7 +38,7 @@ def Simular(nome,r0, w0s):
             SF=1
         else:
             kt = kt+1
-    Xi = np.delete(Xi, 0,axis = 0)        
+    Xi = np.delete(Xi, 0,axis = 0)         
   
     ts = (np.arange(len(Xi[:,0]))+1)*TRen
     salvar = {'r0': r0, 'Xi': Xi,  'ts': ts}
@@ -117,7 +117,7 @@ if atol is None:
     atol = 1.49012e-8 #Valor padrão usado pela biblioteca
     
 TRen = 0.1
-Tmax =10
+Tmax =100
 
 
 numerosim ='esp-lyapunov'
