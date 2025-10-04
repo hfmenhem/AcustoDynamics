@@ -170,6 +170,13 @@ listacor = [9,10,
             0,1,
             ]
 
+# lista = [  (0,0), (4,0),(4,4),(0,4), (0,0)
+#          ]
+
+# listacor = [9,10,
+#             19,18
+#             ]
+
 lista = np.array(lista)
 pontos = r0s[lista[:,0],lista[:,1]]
 
@@ -186,7 +193,7 @@ colors= cmap(np.linspace(0,1, 20))
 
 
 
-
+ax.plot(pontos[:,0], pontos[:,1], '-', color = 'k', linewidth=.5)
 for i, pt in enumerate(pontos):
     ax.plot(pt[0], pt[1], '+', color = colors[listacor[i]], markersize=5)
     

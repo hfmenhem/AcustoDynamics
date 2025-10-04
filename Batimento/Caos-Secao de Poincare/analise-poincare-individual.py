@@ -45,7 +45,7 @@ if __name__ == '__main__':
     #     ] 
     # manter = [1-0, 1]
     
-    # #===Mapeamento geral - próxima da possível separatriz
+    #===Mapeamento geral - próxima da possível separatriz
     # pasta='PoincareGrid4'
     # n0 = 20
     # n1 = 20
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     #          ]            
              
     
-    # listacor = [18,17,16,
+    # listacor = [1,5,12,#18,17,16,
     #             8,
     #             15
                 
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     
     # zorderlist=[12,11,10, 10,10
     #     ]
-    # manter = [1-.05, 1]
+    # manter = [0, 1]
     
     #===Região próxima da possível separatriz
     # pasta='PoincareGrid-con_dev'
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     comprimento = 0.1
     manter = [shift, shift+comprimento]
     manter=[0,1]
-    # #===Região próxima da possível separatriz - trajetorias que convergiram, V2
+    #===Região próxima da possível separatriz - trajetorias que convergiram, V2
     # pasta='PoincareGrid-con_dev2-RK8'
     # pasta='PoincareGrid-con_dev2'
     

@@ -18,7 +18,9 @@ import concurrent.futures
 if __name__ == '__main__':
     
     pasta='PoincareGrid-con_dev2-RK8'
-    # pasta='PoincareGrid4'
+    
+    #pasta='PoincareGrid4'
+    
     nomes =[]
     for x in os.listdir(pasta):
         if 'dado' in x:
@@ -29,8 +31,8 @@ if __name__ == '__main__':
     n0 = 5
     n1 = 5
     
-    # n0 = 20
-    # n1 = 20
+    #n0 = 20
+    #n1 = 20
     
     r0s= []
     
@@ -59,18 +61,32 @@ if __name__ == '__main__':
     nomesOrg = np.array(nomes)[inds.flatten()]
     cmappoincare = mpl.colormaps['viridis']
     
+    cmapEspecial = mpl.colormaps['tab20c']
     ns = []
+    
+    
+    especial = [ (4,0),(0,4),(4,2)]
+    
+    mesmaCor = 1/((2*n0))
+    cores = []
+    for d in range(n1):
+        shiftCor = mesmaCor*(d/(n1-1))
+        teste=np.linspace(shiftCor + mesmaCor, 1-mesmaCor+shiftCor, n0)
+        colors = cmappoincare(teste)
+        cores.append(colors)
+        
+    for i, corEsp in enumerate(especial):
+        cores[corEsp[0]][corEsp[1]] = cmapEspecial((16+i)/20)
     for d in range(n1):
     #for d in[17]:        
-        m = 1
-        display = nomesOrg[d*n0*m:(d+1)*m*n0]
-        #display = nomesOrg
-        colors = cmappoincare(np.linspace(0, 1, len(display)))
         
+        display = nomesOrg[d*n0:(d+1)*n0]
+        #display = nomesOrg
+
            
         manter = .05
         manter = 1
-        fig = plt.figure(dpi=300, figsize=(10,8))
+        fig = plt.figure(dpi=300, figsize=(20,20))
         ax = fig.add_subplot(projection='3d')
         #ax.view_init(elev=5, azim=20)
         ax.view_init(elev=45, azim=-90)
@@ -86,21 +102,21 @@ if __name__ == '__main__':
             ns.append(len(rpic[0,:]))
             descarten = int(len(rpic[0,:])*manter)
             
-            ax.plot( rpic[0,-1*descarten:], rpic[1,-1*descarten:], vpic[1,-1*descarten:], '.', markersize=1, color = colors[i] )
-            ax.plot(r0[0], r0[1],0, marker='+', color = colors[i])
+            ax.plot( rpic[0,-1*descarten:], rpic[1,-1*descarten:], vpic[1,-1*descarten:], '.', markersize=1, color = cores[d][i] )
+            ax.plot(r0[0], r0[1],0, marker='+', color = cores[d][i])
             #ax.plot(rpic[1,0], vpic[1,0], rpic[0,0], marker='x', color = colors[i])
         
-        ax.set_xlabel(r'$z_A$')
-        ax.set_ylabel(r'$z_B$')
-        ax.set_zlabel(r'$v_B$')
+        ax.set_xlabel(r'$z_A$ [mm]', size = 'x-large')
+        ax.set_ylabel(r'$z_B$ [mm]', size = 'x-large')
+        ax.set_zlabel(r'$v_B$ [mm/s]', size = 'x-large')
         
         ax.set_ylim(2.5, 5.2)
         ax.set_xlim(-1.2, 1.2)
         ax.set_zlim(-400, 400)
         
-        # ax.set_xlim(-1.1,-.9)
-        # ax.set_ylim(3.2,3.4)
-        # ax.set_zlim(-30,10)
+        ax.set_xlim(-1.1,-.9)
+        ax.set_ylim(3.2,3.4)
+        ax.set_zlim(-30,10)
         
         plt.show()
     print(len(ns))
